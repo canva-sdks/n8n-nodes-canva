@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-canva",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Development", "Developer Tools"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://github.com/canva-dev/n8n-nodes-canva?tab=readme-ov-file#credentials"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/canva-dev/n8n-nodes-canva?tab=readme-ov-file"
+			}
+		]
+	}
+}

@@ -1,0 +1,52 @@
+{
+	"name": "n8n-nodes-canva",
+	"version": "0.1.0",
+	"description": "Canva API integration for n8n",
+	"license": "MIT",
+	"homepage": "",
+	"keywords": [
+		"n8n-community-node-package"
+	],
+	"author": {
+		"name": "Canva",
+		"email": "support@canva.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/canva/n8n-nodes-canva.git"
+	},
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"prettier": "prettier --check .",
+		"prettier:fix": "prettier --write .",
+		"release": "n8n-node release",
+		"prepublishOnly": "n8n-node prerelease"
+	},
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/CanvaOAuth2Api.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Canva/Canva.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "*",
+		"eslint": "9.29.0",
+		"prettier": "3.6.2",
+		"release-it": "^19.0.4",
+		"typescript": "5.9.2"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
+}
