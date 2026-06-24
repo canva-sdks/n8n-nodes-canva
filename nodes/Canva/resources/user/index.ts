@@ -1,60 +1,28 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { userCreateDescription } from './create';
-import { userGetDescription } from './get';
 
-const showOnlyForUsers = {
-	resource: ['user'],
-};
-
-export const userDescription: INodeProperties[] = [
+export const userOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
 		noDataExpression: true,
-		displayOptions: {
-			show: showOnlyForUsers,
-		},
+		displayOptions: { show: { resource: ['user'] } },
 		options: [
 			{
-				name: 'Get Many',
-				value: 'getAll',
-				action: 'Get users',
-				description: 'Get many users',
-				routing: {
-					request: {
-						method: 'GET',
-						url: '/users',
-					},
-				},
+				name: 'Get Me',
+				value: 'getMe',
+				description: 'Get the User ID and Team ID of the authenticated user',
+				action: 'Get current user',
 			},
 			{
-				name: 'Get',
-				value: 'get',
-				action: 'Get a user',
-				description: 'Get the data of a single user',
-				routing: {
-					request: {
-						method: 'GET',
-						url: '=/users/{{$parameter.userId}}',
-					},
-				},
-			},
-			{
-				name: 'Create',
-				value: 'create',
-				action: 'Create a new user',
-				description: 'Create a new user',
-				routing: {
-					request: {
-						method: 'POST',
-						url: '/users',
-					},
-				},
+				name: 'Get Profile',
+				value: 'getProfile',
+				description: 'Get the display name of the authenticated user',
+				action: 'Get user profile',
 			},
 		],
-		default: 'getAll',
+		default: 'getMe',
 	},
-	...userGetDescription,
-	...userCreateDescription,
 ];
+
+export const userDescription: INodeProperties[] = [...userOperations];

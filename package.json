@@ -18,7 +18,7 @@
 	"scripts": {
 		"build": "n8n-node build",
 		"build:watch": "tsc --watch",
-		"dev": "n8n-node dev",
+		"dev": "N8N_EDITOR_BASE_URL=http://127.0.0.1:5678 n8n-node dev",
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
 		"prettier": "prettier --check .",

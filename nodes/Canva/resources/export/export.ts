@@ -1,0 +1,61 @@
+import type { INodeProperties } from 'n8n-workflow';
+
+export const exportExportDescription: INodeProperties[] = [
+	{
+		displayName: 'Design ID',
+		name: 'designId',
+		type: 'string',
+		default: '',
+		required: true,
+		displayOptions: { show: { resource: ['export'], operation: ['export'] } },
+		description: 'The ID of the design to export',
+		placeholder: 'DAFVztcvd9z',
+	},
+	{
+		displayName: 'Format',
+		name: 'format',
+		type: 'options',
+		options: [
+			{ name: 'GIF', value: 'gif' },
+			{ name: 'HTML Bundle', value: 'html_bundle' },
+			{ name: 'HTML Standalone', value: 'html_standalone' },
+			{ name: 'JPG', value: 'jpg' },
+			{ name: 'MP4', value: 'mp4' },
+			{ name: 'PDF', value: 'pdf' },
+			{ name: 'PNG', value: 'png' },
+			{ name: 'PowerPoint (PPTX)', value: 'pptx' },
+		],
+		default: 'pdf',
+		required: true,
+		displayOptions: { show: { resource: ['export'], operation: ['export'] } },
+		description: 'File format to export the design as',
+	},
+	{
+		displayName: 'Page Numbers',
+		name: 'pages',
+		type: 'string',
+		default: '',
+		displayOptions: { show: { resource: ['export'], operation: ['export'] } },
+		description:
+			'Comma-separated list of page numbers to export (e.g. "1,2,3"). Leave empty to export all pages.',
+		placeholder: '1,2,3',
+	},
+	{
+		displayName: 'Poll Interval (Ms)',
+		name: 'pollInterval',
+		type: 'number',
+		typeOptions: { minValue: 500, maxValue: 30000 },
+		default: 2000,
+		displayOptions: { show: { resource: ['export'], operation: ['export'] } },
+		description: 'How often to check if the export job is complete (milliseconds)',
+	},
+	{
+		displayName: 'Max Wait Time (Seconds)',
+		name: 'maxWait',
+		type: 'number',
+		typeOptions: { minValue: 10, maxValue: 300 },
+		default: 60,
+		displayOptions: { show: { resource: ['export'], operation: ['export'] } },
+		description: 'Maximum time to wait for the export to complete before timing out',
+	},
+];

@@ -9,14 +9,14 @@ export class CanvaOAuth2Api implements ICredentialType {
 
 	documentationUrl = 'https://github.com/canva-dev/n8n-nodes-canva?tab=readme-ov-file#credentials';
 
-	icon: Icon = `file:canva.svg`; /** @todo */
+	icon: Icon = `file:canva.svg`;
 
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Grant Type',
 			name: 'grantType',
 			type: 'hidden',
-			default: 'authorizationCode',
+			default: 'pkce',
 		},
 		{
 			displayName: 'Authorization URL',
@@ -41,7 +41,7 @@ export class CanvaOAuth2Api implements ICredentialType {
 			name: 'scope',
 			type: 'hidden',
 			default:
-				'brandtemplate:content:read brandtemplate:meta:read design:content:read design:meta:read',
+				'asset:read asset:write brandtemplate:content:read brandtemplate:meta:read design:content:read design:content:write design:meta:read folder:read folder:write profile:read',
 		},
 		{
 			displayName: 'Authentication',
