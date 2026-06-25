@@ -302,6 +302,59 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{ method: 'GET', url: `${BASE_URL}/assets/${assetId}`, json: true },
 						);
+					} else if (operation === 'upload') {
+						const name = this.getNodeParameter('name', i) as string;
+						const url = this.getNodeParameter('url', i) as string;
+						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
+						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
+
+						// 1. Create upload job
+						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'POST',
+								url: `${BASE_URL}/url-asset-uploads`,
+								body: { name, url },
+								json: true,
+							},
+						)) as { job: { id: string; status: string } };
+
+						const uploadJobId = createResp.job.id;
+
+						// 2. Poll until done
+						const deadline = Date.now() + maxWait;
+						let jobResp = createResp;
+
+						while (jobResp.job.status === 'in_progress') {
+							if (Date.now() >= deadline) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Asset upload job ${uploadJobId} timed out after ${maxWait / 1000}s`,
+									{ itemIndex: i },
+								);
+							}
+							await sleep(pollInterval);
+							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
+								this,
+								'canvaOAuth2Api',
+								{
+									method: 'GET',
+									url: `${BASE_URL}/url-asset-uploads/${uploadJobId}`,
+									json: true,
+								},
+							)) as { job: { id: string; status: string } };
+						}
+
+						if (jobResp.job.status === 'failed') {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Asset upload job ${uploadJobId} failed`,
+								{ itemIndex: i },
+							);
+						}
+
+						responseData = jobResp;
 					}
 				}
 
