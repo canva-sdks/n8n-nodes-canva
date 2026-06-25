@@ -11,6 +11,7 @@ import {
 	type JsonObject,
 } from 'n8n-workflow';
 
+import { autofillDescription } from './resources/autofill';
 import { designDescription } from './resources/design';
 import { exportDescription } from './resources/export';
 import { userDescription } from './resources/user';
@@ -41,6 +42,7 @@ export class Canva implements INodeType {
 				noDataExpression: true,
 				options: [
 					{ name: 'Asset', value: 'asset' },
+					{ name: 'Autofill', value: 'autofill' },
 					{ name: 'Design', value: 'design' },
 					{ name: 'Export', value: 'export' },
 					{ name: 'Folder', value: 'folder' },
@@ -48,6 +50,7 @@ export class Canva implements INodeType {
 				],
 				default: 'design',
 			},
+			...autofillDescription,
 			...designDescription,
 			...exportDescription,
 			...userDescription,
@@ -67,8 +70,71 @@ export class Canva implements INodeType {
 
 				let responseData: unknown;
 
+				// ─── Autofill ──────────────────────────────────────────────────────
+				if (resource === 'autofill') {
+					if (operation === 'create') {
+						const brandTemplateId = this.getNodeParameter('brandTemplateId', i) as string;
+						const dataRaw = this.getNodeParameter('data', i) as string | IDataObject;
+						const title = this.getNodeParameter('title', i) as string;
+						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
+						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
+
+						const data: IDataObject =
+							typeof dataRaw === 'string' ? (JSON.parse(dataRaw) as IDataObject) : dataRaw;
+
+						const body: IDataObject = { brand_template_id: brandTemplateId, data };
+						if (title) body.title = title;
+
+						// 1. Create autofill job
+						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'POST',
+								url: `${BASE_URL}/autofills`,
+								body,
+								json: true,
+							},
+						)) as { job: { id: string; status: string } };
+
+						const autofillJobId = createResp.job.id;
+
+						// 2. Poll until done
+						const deadline = Date.now() + maxWait;
+						let jobResp = createResp;
+
+						while (jobResp.job.status === 'in_progress') {
+							if (Date.now() >= deadline) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Autofill job ${autofillJobId} timed out after ${maxWait / 1000}s`,
+									{ itemIndex: i },
+								);
+							}
+							await sleep(pollInterval);
+							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
+								this,
+								'canvaOAuth2Api',
+								{
+									method: 'GET',
+									url: `${BASE_URL}/autofills/${autofillJobId}`,
+									json: true,
+								},
+							)) as { job: { id: string; status: string } };
+						}
+
+						if (jobResp.job.status === 'failed') {
+							throw new NodeOperationError(this.getNode(), `Autofill job ${autofillJobId} failed`, {
+								itemIndex: i,
+							});
+						}
+
+						responseData = jobResp;
+					}
+				}
+
 				// ─── Design ────────────────────────────────────────────────────────
-				if (resource === 'design') {
+				else if (resource === 'design') {
 					if (operation === 'create') {
 						const designType = this.getNodeParameter('designType', i) as string;
 						const title = this.getNodeParameter('title', i) as string;
