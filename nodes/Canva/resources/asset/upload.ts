@@ -18,8 +18,7 @@ export const assetUploadDescription: INodeProperties[] = [
 		default: '',
 		required: true,
 		displayOptions: { show: { resource: ['asset'], operation: ['upload'] } },
-		description:
-			'Publicly accessible URL of the file to upload. Videos are limited to 100MB.',
+		description: 'Publicly accessible URL of the file to upload. Videos are limited to 100MB.',
 		placeholder: 'https://example.com/image.jpg',
 	},
 	{
