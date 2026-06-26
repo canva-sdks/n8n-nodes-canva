@@ -4,6 +4,7 @@ import { commentCreateThreadDescription } from './createThread';
 import { commentGetReplyDescription } from './getReply';
 import { commentGetThreadDescription } from './getThread';
 import { commentListRepliesDescription } from './listReplies';
+import { commentPreviewNoticeDescription } from './previewNotice';
 
 export const commentOperations: INodeProperties[] = [
 	{
@@ -14,31 +15,31 @@ export const commentOperations: INodeProperties[] = [
 		displayOptions: { show: { resource: ['comment'] } },
 		options: [
 			{
-				name: 'Create Reply',
+				name: 'Create Reply (Preview)',
 				value: 'createReply',
 				description: 'Reply to a comment thread on a design',
 				action: 'Create a comment reply',
 			},
 			{
-				name: 'Create Thread',
+				name: 'Create Thread (Preview)',
 				value: 'createThread',
 				description: 'Create a new comment thread on a design',
 				action: 'Create a comment thread',
 			},
 			{
-				name: 'Get Reply',
+				name: 'Get Reply (Preview)',
 				value: 'getReply',
 				description: 'Get a specific reply from a comment thread',
 				action: 'Get a comment reply',
 			},
 			{
-				name: 'Get Thread',
+				name: 'Get Thread (Preview)',
 				value: 'getThread',
 				description: 'Get metadata for a comment thread',
 				action: 'Get a comment thread',
 			},
 			{
-				name: 'List Replies',
+				name: 'List Replies (Preview)',
 				value: 'listReplies',
 				description: 'List all replies for a comment thread',
 				action: 'List comment replies',
@@ -50,6 +51,7 @@ export const commentOperations: INodeProperties[] = [
 
 export const commentDescription: INodeProperties[] = [
 	...commentOperations,
+	...commentPreviewNoticeDescription,
 	...commentCreateReplyDescription,
 	...commentCreateThreadDescription,
 	...commentGetReplyDescription,

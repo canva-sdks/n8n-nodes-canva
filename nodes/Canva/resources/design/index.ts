@@ -2,6 +2,7 @@ import type { INodeProperties } from 'n8n-workflow';
 import { designCreateDescription } from './create';
 import { designGetDescription } from './get';
 import { designGetDatasetDescription } from './getDataset';
+import { designGetDatasetPreviewNoticeDescription } from './getDatasetPreviewNotice';
 import { designGetExportFormatsDescription } from './getExportFormats';
 import { designGetPagesDescription } from './getPages';
 import { designListDescription } from './list';
@@ -59,6 +60,7 @@ export const designDescription: INodeProperties[] = [
 	...designOperations,
 	...designCreateDescription,
 	...designGetDescription,
+	...designGetDatasetPreviewNoticeDescription,
 	...designGetDatasetDescription,
 	...designGetExportFormatsDescription,
 	...designGetPagesDescription,

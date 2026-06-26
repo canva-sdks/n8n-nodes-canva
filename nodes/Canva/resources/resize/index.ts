@@ -1,5 +1,6 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { resizeCreateDescription } from './create';
+import { resizePremiumNoticeDescription } from './premiumNotice';
 
 export const resizeOperations: INodeProperties[] = [
 	{
@@ -23,5 +24,6 @@ export const resizeOperations: INodeProperties[] = [
 
 export const resizeDescription: INodeProperties[] = [
 	...resizeOperations,
+	...resizePremiumNoticeDescription,
 	...resizeCreateDescription,
 ];

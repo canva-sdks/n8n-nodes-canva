@@ -1,5 +1,6 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { mergeCreateDescription } from './create';
+import { mergePreviewNoticeDescription } from './previewNotice';
 
 export const mergeOperations: INodeProperties[] = [
 	{
@@ -10,7 +11,7 @@ export const mergeOperations: INodeProperties[] = [
 		displayOptions: { show: { resource: ['merge'] } },
 		options: [
 			{
-				name: 'Create Merge Job',
+				name: 'Create Merge Job (Preview)',
 				value: 'create',
 				description:
 					'Merge design pages by applying page operations to create or modify a design (waits for the job to complete)',
@@ -21,4 +22,8 @@ export const mergeOperations: INodeProperties[] = [
 	},
 ];
 
-export const mergeDescription: INodeProperties[] = [...mergeOperations, ...mergeCreateDescription];
+export const mergeDescription: INodeProperties[] = [
+	...mergeOperations,
+	...mergePreviewNoticeDescription,
+	...mergeCreateDescription,
+];

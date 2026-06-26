@@ -3,6 +3,7 @@ import { brandTemplateGetDescription } from './get';
 import { brandTemplateGetDatasetDescription } from './getDataset';
 import { brandTemplateListDescription } from './list';
 import { brandTemplatePublishDescription } from './publish';
+import { brandTemplatePublishPreviewNoticeDescription } from './publishPreviewNotice';
 
 export const brandTemplateOperations: INodeProperties[] = [
 	{
@@ -31,7 +32,7 @@ export const brandTemplateOperations: INodeProperties[] = [
 				action: 'List brand templates',
 			},
 			{
-				name: 'Publish',
+				name: 'Publish (Preview)',
 				value: 'publish',
 				description: 'Publish a design as a brand template',
 				action: 'Publish a brand template',
@@ -46,5 +47,6 @@ export const brandTemplateDescription: INodeProperties[] = [
 	...brandTemplateGetDescription,
 	...brandTemplateGetDatasetDescription,
 	...brandTemplateListDescription,
+	...brandTemplatePublishPreviewNoticeDescription,
 	...brandTemplatePublishDescription,
 ];
