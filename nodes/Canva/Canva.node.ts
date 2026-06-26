@@ -358,6 +358,17 @@ export class Canva implements INodeType {
 								json: true,
 							},
 						);
+					} else if (operation === 'getDataset') {
+						const designId = this.getNodeParameter('designId', i) as string;
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'GET',
+								url: `${BASE_URL}/designs/${designId}/dataset`,
+								json: true,
+							},
+						);
 					} else if (operation === 'getPages') {
 						const designId = this.getNodeParameter('designId', i) as string;
 						responseData = await this.helpers.httpRequestWithAuthentication.call(
