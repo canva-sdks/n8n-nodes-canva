@@ -47,7 +47,7 @@ export const folderOperations: INodeProperties[] = [
 			{
 				name: 'Update',
 				value: 'update',
-				description: 'Update a folder\'s metadata',
+				description: "Update a folder's metadata",
 				action: 'Update a folder',
 			},
 		],

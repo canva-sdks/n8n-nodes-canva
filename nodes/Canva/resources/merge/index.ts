@@ -21,7 +21,4 @@ export const mergeOperations: INodeProperties[] = [
 	},
 ];
 
-export const mergeDescription: INodeProperties[] = [
-	...mergeOperations,
-	...mergeCreateDescription,
-];
+export const mergeDescription: INodeProperties[] = [...mergeOperations, ...mergeCreateDescription];

@@ -18,8 +18,7 @@ export const folderMoveItemDescription: INodeProperties[] = [
 		default: '',
 		required: true,
 		displayOptions: { show: { resource: ['folder'], operation: ['moveItem'] } },
-		description:
-			'The ID of the destination folder. Use "root" for the top-level projects folder.',
+		description: 'The ID of the destination folder. Use "root" for the top-level projects folder.',
 		placeholder: 'FAF2lZtloor',
 	},
 ];

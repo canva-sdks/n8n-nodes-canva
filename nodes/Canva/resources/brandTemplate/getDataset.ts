@@ -8,8 +8,7 @@ export const brandTemplateGetDatasetDescription: INodeProperties[] = [
 		default: '',
 		required: true,
 		displayOptions: { show: { resource: ['brandTemplate'], operation: ['getDataset'] } },
-		description:
-			'The ID of the brand template to get the autofill dataset for',
+		description: 'The ID of the brand template to get the autofill dataset for',
 		placeholder: 'DAFVztcvd9z',
 	},
 ];

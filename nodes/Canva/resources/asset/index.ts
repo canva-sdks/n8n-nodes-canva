@@ -15,7 +15,7 @@ export const assetOperations: INodeProperties[] = [
 			{
 				name: 'Delete',
 				value: 'delete',
-				description: 'Delete an asset from the user\'s projects',
+				description: "Delete an asset from the user's projects",
 				action: 'Delete an asset',
 			},
 			{
