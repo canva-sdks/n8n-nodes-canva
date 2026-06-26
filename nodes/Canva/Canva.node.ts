@@ -12,11 +12,16 @@ import {
 } from 'n8n-workflow';
 
 import { autofillDescription } from './resources/autofill';
+import { brandTemplateDescription } from './resources/brandTemplate';
+import { commentDescription } from './resources/comment';
 import { designDescription } from './resources/design';
+import { designImportDescription } from './resources/designImport';
 import { exportDescription } from './resources/export';
-import { userDescription } from './resources/user';
 import { folderDescription } from './resources/folder';
+import { mergeDescription } from './resources/merge';
+import { resizeDescription } from './resources/resize';
 import { assetDescription } from './resources/asset';
+import { userDescription } from './resources/user';
 
 const BASE_URL = 'https://api.canva.com/rest/v1';
 
@@ -43,19 +48,29 @@ export class Canva implements INodeType {
 				options: [
 					{ name: 'Asset', value: 'asset' },
 					{ name: 'Autofill', value: 'autofill' },
+					{ name: 'Brand Template', value: 'brandTemplate' },
+					{ name: 'Comment (Preview)', value: 'comment' },
 					{ name: 'Design', value: 'design' },
+					{ name: 'Design Import', value: 'designImport' },
 					{ name: 'Export', value: 'export' },
 					{ name: 'Folder', value: 'folder' },
+					{ name: 'Merge (Preview)', value: 'merge' },
+					{ name: 'Resize', value: 'resize' },
 					{ name: 'User', value: 'user' },
 				],
 				default: 'design',
 			},
 			...autofillDescription,
+			...brandTemplateDescription,
+			...commentDescription,
 			...designDescription,
+			...designImportDescription,
 			...exportDescription,
-			...userDescription,
 			...folderDescription,
+			...mergeDescription,
+			...resizeDescription,
 			...assetDescription,
+			...userDescription,
 		],
 	};
 
@@ -133,6 +148,174 @@ export class Canva implements INodeType {
 					}
 				}
 
+				// ─── Brand Template ────────────────────────────────────────────────
+				else if (resource === 'brandTemplate') {
+					if (operation === 'get') {
+						const brandTemplateId = this.getNodeParameter('brandTemplateId', i) as string;
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{ method: 'GET', url: `${BASE_URL}/brand-templates/${brandTemplateId}`, json: true },
+						);
+					} else if (operation === 'getDataset') {
+						const brandTemplateId = this.getNodeParameter('brandTemplateId', i) as string;
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'GET',
+								url: `${BASE_URL}/brand-templates/${brandTemplateId}/dataset`,
+								json: true,
+							},
+						);
+					} else if (operation === 'list') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const limit = returnAll ? 100 : (this.getNodeParameter('limit', i) as number);
+						const filters = this.getNodeParameter('filters', i) as IDataObject;
+
+						const qs: IDataObject = { limit };
+						if (filters.query) qs.query = filters.query;
+						if (filters.ownership) qs.ownership = filters.ownership;
+						if (filters.sort_by) qs.sort_by = filters.sort_by;
+
+						if (returnAll) {
+							const allItems: unknown[] = [];
+							let continuation: string | undefined;
+							do {
+								if (continuation) qs.continuation = continuation;
+								const resp = (await this.helpers.httpRequestWithAuthentication.call(
+									this,
+									'canvaOAuth2Api',
+									{ method: 'GET', url: `${BASE_URL}/brand-templates`, qs, json: true },
+								)) as { items?: unknown[]; continuation?: string };
+								allItems.push(...(resp.items ?? []));
+								continuation = resp.continuation;
+							} while (continuation);
+							responseData = { items: allItems };
+						} else {
+							responseData = await this.helpers.httpRequestWithAuthentication.call(
+								this,
+								'canvaOAuth2Api',
+								{ method: 'GET', url: `${BASE_URL}/brand-templates`, qs, json: true },
+							);
+						}
+					} else if (operation === 'publish') {
+						const designId = this.getNodeParameter('designId', i) as string;
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'POST',
+								url: `${BASE_URL}/brand-templates`,
+								body: { design_id: designId },
+								json: true,
+							},
+						);
+					}
+				}
+
+				// ─── Comment ───────────────────────────────────────────────────────
+				else if (resource === 'comment') {
+					if (operation === 'createThread') {
+						const designId = this.getNodeParameter('designId', i) as string;
+						const message = this.getNodeParameter('message', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+
+						const body: IDataObject = { message };
+						if (additionalFields.assignee_id) body.assignee_id = additionalFields.assignee_id;
+
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'POST',
+								url: `${BASE_URL}/designs/${designId}/comments`,
+								body,
+								json: true,
+							},
+						);
+					} else if (operation === 'createReply') {
+						const designId = this.getNodeParameter('designId', i) as string;
+						const threadId = this.getNodeParameter('threadId', i) as string;
+						const message = this.getNodeParameter('message', i) as string;
+
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'POST',
+								url: `${BASE_URL}/designs/${designId}/comments/${threadId}/replies`,
+								body: { message },
+								json: true,
+							},
+						);
+					} else if (operation === 'getThread') {
+						const designId = this.getNodeParameter('designId', i) as string;
+						const threadId = this.getNodeParameter('threadId', i) as string;
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'GET',
+								url: `${BASE_URL}/designs/${designId}/comments/${threadId}`,
+								json: true,
+							},
+						);
+					} else if (operation === 'getReply') {
+						const designId = this.getNodeParameter('designId', i) as string;
+						const threadId = this.getNodeParameter('threadId', i) as string;
+						const replyId = this.getNodeParameter('replyId', i) as string;
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'GET',
+								url: `${BASE_URL}/designs/${designId}/comments/${threadId}/replies/${replyId}`,
+								json: true,
+							},
+						);
+					} else if (operation === 'listReplies') {
+						const designId = this.getNodeParameter('designId', i) as string;
+						const threadId = this.getNodeParameter('threadId', i) as string;
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const limit = returnAll ? 100 : (this.getNodeParameter('limit', i) as number);
+
+						const qs: IDataObject = { limit };
+
+						if (returnAll) {
+							const allItems: unknown[] = [];
+							let continuation: string | undefined;
+							do {
+								if (continuation) qs.continuation = continuation;
+								const resp = (await this.helpers.httpRequestWithAuthentication.call(
+									this,
+									'canvaOAuth2Api',
+									{
+										method: 'GET',
+										url: `${BASE_URL}/designs/${designId}/comments/${threadId}/replies`,
+										qs,
+										json: true,
+									},
+								)) as { items?: unknown[]; continuation?: string };
+								allItems.push(...(resp.items ?? []));
+								continuation = resp.continuation;
+							} while (continuation);
+							responseData = { items: allItems };
+						} else {
+							responseData = await this.helpers.httpRequestWithAuthentication.call(
+								this,
+								'canvaOAuth2Api',
+								{
+									method: 'GET',
+									url: `${BASE_URL}/designs/${designId}/comments/${threadId}/replies`,
+									qs,
+									json: true,
+								},
+							);
+						}
+					}
+				}
+
 				// ─── Design ────────────────────────────────────────────────────────
 				else if (resource === 'design') {
 					if (operation === 'create') {
@@ -175,6 +358,28 @@ export class Canva implements INodeType {
 								json: true,
 							},
 						);
+					} else if (operation === 'getPages') {
+						const designId = this.getNodeParameter('designId', i) as string;
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'GET',
+								url: `${BASE_URL}/designs/${designId}/pages`,
+								json: true,
+							},
+						);
+					} else if (operation === 'getExportFormats') {
+						const designId = this.getNodeParameter('designId', i) as string;
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'GET',
+								url: `${BASE_URL}/designs/${designId}/export-formats`,
+								json: true,
+							},
+						);
 					} else if (operation === 'list') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const limit = returnAll ? 100 : (this.getNodeParameter('limit', i) as number);
@@ -206,6 +411,64 @@ export class Canva implements INodeType {
 								{ method: 'GET', url: `${BASE_URL}/designs`, qs, json: true },
 							);
 						}
+					}
+				}
+
+				// ─── Design Import ─────────────────────────────────────────────────
+				else if (resource === 'designImport') {
+					if (operation === 'createImport') {
+						const url = this.getNodeParameter('url', i) as string;
+						const title = this.getNodeParameter('title', i) as string;
+						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
+						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
+
+						// 1. Create URL import job
+						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'POST',
+								url: `${BASE_URL}/url-imports`,
+								body: { url, title },
+								json: true,
+							},
+						)) as { job: { id: string; status: string } };
+
+						const importJobId = createResp.job.id;
+
+						// 2. Poll until done
+						const deadline = Date.now() + maxWait;
+						let jobResp = createResp;
+
+						while (jobResp.job.status === 'in_progress') {
+							if (Date.now() >= deadline) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Design import job ${importJobId} timed out after ${maxWait / 1000}s`,
+									{ itemIndex: i },
+								);
+							}
+							await sleep(pollInterval);
+							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
+								this,
+								'canvaOAuth2Api',
+								{
+									method: 'GET',
+									url: `${BASE_URL}/url-imports/${importJobId}`,
+									json: true,
+								},
+							)) as { job: { id: string; status: string } };
+						}
+
+						if (jobResp.job.status === 'failed') {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Design import job ${importJobId} failed`,
+								{ itemIndex: i },
+							);
+						}
+
+						responseData = jobResp;
 					}
 				}
 
@@ -274,23 +537,6 @@ export class Canva implements INodeType {
 					}
 				}
 
-				// ─── User ──────────────────────────────────────────────────────────
-				else if (resource === 'user') {
-					if (operation === 'getMe') {
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{ method: 'GET', url: `${BASE_URL}/users/me`, json: true },
-						);
-					} else if (operation === 'getProfile') {
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{ method: 'GET', url: `${BASE_URL}/users/me/profile`, json: true },
-						);
-					}
-				}
-
 				// ─── Folder ────────────────────────────────────────────────────────
 				else if (resource === 'folder') {
 					if (operation === 'create') {
@@ -306,6 +552,14 @@ export class Canva implements INodeType {
 								json: true,
 							},
 						);
+					} else if (operation === 'delete') {
+						const folderId = this.getNodeParameter('folderId', i) as string;
+						await this.helpers.httpRequestWithAuthentication.call(this, 'canvaOAuth2Api', {
+							method: 'DELETE',
+							url: `${BASE_URL}/folders/${folderId}`,
+							json: true,
+						});
+						responseData = { success: true };
 					} else if (operation === 'get') {
 						const folderId = this.getNodeParameter('folderId', i) as string;
 						responseData = await this.helpers.httpRequestWithAuthentication.call(
@@ -356,17 +610,236 @@ export class Canva implements INodeType {
 								},
 							);
 						}
+					} else if (operation === 'moveItem') {
+						const itemId = this.getNodeParameter('itemId', i) as string;
+						const toFolderId = this.getNodeParameter('toFolderId', i) as string;
+						await this.helpers.httpRequestWithAuthentication.call(this, 'canvaOAuth2Api', {
+							method: 'POST',
+							url: `${BASE_URL}/folders/move`,
+							body: {
+								item_id: itemId,
+								to_folder_id: toFolderId,
+							},
+							json: true,
+						});
+						responseData = { success: true };
+					} else if (operation === 'update') {
+						const folderId = this.getNodeParameter('folderId', i) as string;
+						const name = this.getNodeParameter('name', i) as string;
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'PATCH',
+								url: `${BASE_URL}/folders/${folderId}`,
+								body: { name },
+								json: true,
+							},
+						);
+					}
+				}
+
+				// ─── Merge ─────────────────────────────────────────────────────────
+				else if (resource === 'merge') {
+					if (operation === 'create') {
+						const mergeType = this.getNodeParameter('mergeType', i) as string;
+						const operationsRaw = this.getNodeParameter('operations', i) as string | IDataObject[];
+						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
+						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
+
+						const operations: IDataObject[] =
+							typeof operationsRaw === 'string'
+								? (JSON.parse(operationsRaw) as IDataObject[])
+								: operationsRaw;
+
+						const body: IDataObject = { type: mergeType, operations };
+
+						if (mergeType === 'create_new_design') {
+							const title = this.getNodeParameter('title', i) as string;
+							body.title = title;
+						} else {
+							const designId = this.getNodeParameter('designId', i) as string;
+							const optionalTitle = this.getNodeParameter('optionalTitle', i) as string;
+							body.design_id = designId;
+							if (optionalTitle) body.title = optionalTitle;
+						}
+
+						// 1. Create merge job
+						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'POST',
+								url: `${BASE_URL}/merges`,
+								body,
+								json: true,
+							},
+						)) as { job: { id: string; status: string } };
+
+						const mergeJobId = createResp.job.id;
+
+						// 2. Poll until done
+						const deadline = Date.now() + maxWait;
+						let jobResp = createResp;
+
+						while (jobResp.job.status === 'in_progress') {
+							if (Date.now() >= deadline) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Merge job ${mergeJobId} timed out after ${maxWait / 1000}s`,
+									{ itemIndex: i },
+								);
+							}
+							await sleep(pollInterval);
+							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
+								this,
+								'canvaOAuth2Api',
+								{
+									method: 'GET',
+									url: `${BASE_URL}/merges/${mergeJobId}`,
+									json: true,
+								},
+							)) as { job: { id: string; status: string } };
+						}
+
+						if (jobResp.job.status === 'failed') {
+							throw new NodeOperationError(this.getNode(), `Merge job ${mergeJobId} failed`, {
+								itemIndex: i,
+							});
+						}
+
+						responseData = jobResp;
+					}
+				}
+
+				// ─── Resize ────────────────────────────────────────────────────────
+				else if (resource === 'resize') {
+					if (operation === 'create') {
+						const designId = this.getNodeParameter('designId', i) as string;
+						const designType = this.getNodeParameter('designType', i) as string;
+						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
+						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
+
+						let design_type: IDataObject;
+						if (designType === 'preset') {
+							const presetName = this.getNodeParameter('presetName', i) as string;
+							design_type = { type: 'preset', name: presetName };
+						} else {
+							const width = this.getNodeParameter('width', i) as number;
+							const height = this.getNodeParameter('height', i) as number;
+							design_type = { type: 'custom', width, height };
+						}
+
+						// 1. Create resize job
+						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'POST',
+								url: `${BASE_URL}/resizes`,
+								body: { design_id: designId, design_type },
+								json: true,
+							},
+						)) as { job: { id: string; status: string } };
+
+						const resizeJobId = createResp.job.id;
+
+						// 2. Poll until done
+						const deadline = Date.now() + maxWait;
+						let jobResp = createResp;
+
+						while (jobResp.job.status === 'in_progress') {
+							if (Date.now() >= deadline) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Resize job ${resizeJobId} timed out after ${maxWait / 1000}s`,
+									{ itemIndex: i },
+								);
+							}
+							await sleep(pollInterval);
+							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
+								this,
+								'canvaOAuth2Api',
+								{
+									method: 'GET',
+									url: `${BASE_URL}/resizes/${resizeJobId}`,
+									json: true,
+								},
+							)) as { job: { id: string; status: string } };
+						}
+
+						if (jobResp.job.status === 'failed') {
+							throw new NodeOperationError(this.getNode(), `Resize job ${resizeJobId} failed`, {
+								itemIndex: i,
+							});
+						}
+
+						responseData = jobResp;
+					}
+				}
+
+				// ─── User ──────────────────────────────────────────────────────────
+				else if (resource === 'user') {
+					if (operation === 'getCapabilities') {
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{ method: 'GET', url: `${BASE_URL}/users/me/capabilities`, json: true },
+						);
+					} else if (operation === 'getMe') {
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{ method: 'GET', url: `${BASE_URL}/users/me`, json: true },
+						);
+					} else if (operation === 'getProfile') {
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{ method: 'GET', url: `${BASE_URL}/users/me/profile`, json: true },
+						);
 					}
 				}
 
 				// ─── Asset ─────────────────────────────────────────────────────────
 				else if (resource === 'asset') {
-					if (operation === 'get') {
+					if (operation === 'delete') {
+						const assetId = this.getNodeParameter('assetId', i) as string;
+						await this.helpers.httpRequestWithAuthentication.call(this, 'canvaOAuth2Api', {
+							method: 'DELETE',
+							url: `${BASE_URL}/assets/${assetId}`,
+							json: true,
+						});
+						responseData = { success: true };
+					} else if (operation === 'get') {
 						const assetId = this.getNodeParameter('assetId', i) as string;
 						responseData = await this.helpers.httpRequestWithAuthentication.call(
 							this,
 							'canvaOAuth2Api',
 							{ method: 'GET', url: `${BASE_URL}/assets/${assetId}`, json: true },
+						);
+					} else if (operation === 'update') {
+						const assetId = this.getNodeParameter('assetId', i) as string;
+						const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
+
+						const body: IDataObject = {};
+						if (updateFields.name) body.name = updateFields.name;
+						if (updateFields.tags) {
+							body.tags = (updateFields.tags as string)
+								.split(',')
+								.map((t: string) => t.trim())
+								.filter(Boolean);
+						}
+
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'PATCH',
+								url: `${BASE_URL}/assets/${assetId}`,
+								body,
+								json: true,
+							},
 						);
 					} else if (operation === 'upload') {
 						const name = this.getNodeParameter('name', i) as string;
