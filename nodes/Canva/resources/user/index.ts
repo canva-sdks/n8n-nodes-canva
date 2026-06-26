@@ -9,6 +9,12 @@ export const userOperations: INodeProperties[] = [
 		displayOptions: { show: { resource: ['user'] } },
 		options: [
 			{
+				name: 'Get Capabilities',
+				value: 'getCapabilities',
+				description: 'Get the API capabilities for the current user account',
+				action: 'Get user capabilities',
+			},
+			{
 				name: 'Get Me',
 				value: 'getMe',
 				description: 'Get the User ID and Team ID of the authenticated user',
