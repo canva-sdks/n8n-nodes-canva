@@ -6,12 +6,12 @@
 	"resources": {
 		"credentialDocumentation": [
 			{
-				"url": "https://github.com/canva-dev/n8n-nodes-canva?tab=readme-ov-file#credentials"
+				"url": "https://github.com/canva-sdks/n8n-nodes-canva/tree/main#credentials"
 			}
 		],
 		"primaryDocumentation": [
 			{
-				"url": "https://github.com/canva-dev/n8n-nodes-canva?tab=readme-ov-file"
+				"url": "https://github.com/canva-sdks/n8n-nodes-canva/tree/main"
 			}
 		]
 	}

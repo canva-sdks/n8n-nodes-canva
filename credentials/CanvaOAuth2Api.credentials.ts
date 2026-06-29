@@ -7,7 +7,7 @@ export class CanvaOAuth2Api implements ICredentialType {
 
 	displayName = 'Canva OAuth2 API';
 
-	documentationUrl = 'https://github.com/canva-dev/n8n-nodes-canva?tab=readme-ov-file#credentials';
+	documentationUrl = 'https://github.com/canva-sdks/n8n-nodes-canva/tree/main#credentials';
 
 	icon: Icon = `file:canva.svg`;
 
