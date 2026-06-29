@@ -85,8 +85,104 @@ export class Canva implements INodeType {
 
 				let responseData: unknown;
 
+				// ─── Asset ─────────────────────────────────────────────────────────
+				if (resource === 'asset') {
+					if (operation === 'delete') {
+						const assetId = this.getNodeParameter('assetId', i) as string;
+						await this.helpers.httpRequestWithAuthentication.call(this, 'canvaOAuth2Api', {
+							method: 'DELETE',
+							url: `${BASE_URL}/assets/${assetId}`,
+							json: true,
+						});
+						responseData = { success: true };
+					} else if (operation === 'get') {
+						const assetId = this.getNodeParameter('assetId', i) as string;
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{ method: 'GET', url: `${BASE_URL}/assets/${assetId}`, json: true },
+						);
+					} else if (operation === 'update') {
+						const assetId = this.getNodeParameter('assetId', i) as string;
+						const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
+
+						const body: IDataObject = {};
+						if (updateFields.name) body.name = updateFields.name;
+						if (updateFields.tags) {
+							body.tags = (updateFields.tags as string)
+								.split(',')
+								.map((t: string) => t.trim())
+								.filter(Boolean);
+						}
+
+						responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'PATCH',
+								url: `${BASE_URL}/assets/${assetId}`,
+								body,
+								json: true,
+							},
+						);
+					} else if (operation === 'upload') {
+						const name = this.getNodeParameter('name', i) as string;
+						const url = this.getNodeParameter('url', i) as string;
+						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
+						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
+
+						// 1. Create upload job
+						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'canvaOAuth2Api',
+							{
+								method: 'POST',
+								url: `${BASE_URL}/url-asset-uploads`,
+								body: { name, url },
+								json: true,
+							},
+						)) as { job: { id: string; status: string } };
+
+						const uploadJobId = createResp.job.id;
+
+						// 2. Poll until done
+						const deadline = Date.now() + maxWait;
+						let jobResp = createResp;
+
+						while (jobResp.job.status === 'in_progress') {
+							if (Date.now() >= deadline) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Asset upload job ${uploadJobId} timed out after ${maxWait / 1000}s`,
+									{ itemIndex: i },
+								);
+							}
+							await sleep(pollInterval);
+							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
+								this,
+								'canvaOAuth2Api',
+								{
+									method: 'GET',
+									url: `${BASE_URL}/url-asset-uploads/${uploadJobId}`,
+									json: true,
+								},
+							)) as { job: { id: string; status: string } };
+						}
+
+						if (jobResp.job.status === 'failed') {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Asset upload job ${uploadJobId} failed`,
+								{ itemIndex: i },
+							);
+						}
+
+						responseData = jobResp;
+					}
+				}
+
 				// ─── Autofill ──────────────────────────────────────────────────────
-				if (resource === 'autofill') {
+				else if (resource === 'autofill') {
 					if (operation === 'create') {
 						const brandTemplateId = this.getNodeParameter('brandTemplateId', i) as string;
 						const dataRaw = this.getNodeParameter('data', i) as string | IDataObject;
@@ -812,102 +908,7 @@ export class Canva implements INodeType {
 					}
 				}
 
-				// ─── Asset ─────────────────────────────────────────────────────────
-				else if (resource === 'asset') {
-					if (operation === 'delete') {
-						const assetId = this.getNodeParameter('assetId', i) as string;
-						await this.helpers.httpRequestWithAuthentication.call(this, 'canvaOAuth2Api', {
-							method: 'DELETE',
-							url: `${BASE_URL}/assets/${assetId}`,
-							json: true,
-						});
-						responseData = { success: true };
-					} else if (operation === 'get') {
-						const assetId = this.getNodeParameter('assetId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{ method: 'GET', url: `${BASE_URL}/assets/${assetId}`, json: true },
-						);
-					} else if (operation === 'update') {
-						const assetId = this.getNodeParameter('assetId', i) as string;
-						const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
-
-						const body: IDataObject = {};
-						if (updateFields.name) body.name = updateFields.name;
-						if (updateFields.tags) {
-							body.tags = (updateFields.tags as string)
-								.split(',')
-								.map((t: string) => t.trim())
-								.filter(Boolean);
-						}
-
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'PATCH',
-								url: `${BASE_URL}/assets/${assetId}`,
-								body,
-								json: true,
-							},
-						);
-					} else if (operation === 'upload') {
-						const name = this.getNodeParameter('name', i) as string;
-						const url = this.getNodeParameter('url', i) as string;
-						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
-						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
-
-						// 1. Create upload job
-						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/url-asset-uploads`,
-								body: { name, url },
-								json: true,
-							},
-						)) as { job: { id: string; status: string } };
-
-						const uploadJobId = createResp.job.id;
-
-						// 2. Poll until done
-						const deadline = Date.now() + maxWait;
-						let jobResp = createResp;
-
-						while (jobResp.job.status === 'in_progress') {
-							if (Date.now() >= deadline) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Asset upload job ${uploadJobId} timed out after ${maxWait / 1000}s`,
-									{ itemIndex: i },
-								);
-							}
-							await sleep(pollInterval);
-							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
-								this,
-								'canvaOAuth2Api',
-								{
-									method: 'GET',
-									url: `${BASE_URL}/url-asset-uploads/${uploadJobId}`,
-									json: true,
-								},
-							)) as { job: { id: string; status: string } };
-						}
-
-						if (jobResp.job.status === 'failed') {
-							throw new NodeOperationError(
-								this.getNode(),
-								`Asset upload job ${uploadJobId} failed`,
-								{ itemIndex: i },
-							);
-						}
-
-						responseData = jobResp;
-					}
-				}
-
+				// Error handling
 				if (responseData === undefined) {
 					throw new NodeOperationError(
 						this.getNode(),
