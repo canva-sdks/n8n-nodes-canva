@@ -41,7 +41,7 @@ export class CanvaOAuth2Api implements ICredentialType {
 			name: 'scope',
 			type: 'hidden',
 			default:
-				'asset:read asset:write brandtemplate:content:read brandtemplate:meta:read comment:read comment:write design:content:read design:content:write design:meta:read folder:read folder:write profile:read',
+				'asset:read asset:write brandtemplate:content:read brandtemplate:content:write brandtemplate:meta:read comment:read comment:write design:content:read design:content:write design:meta:read folder:read folder:write profile:read',
 		},
 		{
 			displayName: 'Authentication',

@@ -27,7 +27,7 @@ If you want to try this node on your machine before publishing, you can run n8n 
 npm install -g n8n
 ```
 
-2. Build the node
+1. Build the node
 
 From the root of this repo:
 
@@ -36,7 +36,7 @@ npm install
 npm run build
 ```
 
-3. Link the package
+1. Link the package
 
 ```bash
 npm link
@@ -50,7 +50,7 @@ npm link @canva/n8n-nodes-canva
 
 > Run this inside the n8n installation directory — typically `~/.n8n` or wherever `n8n` was installed globally. You can find it with `npm root -g`.
 
-4. Start n8n in dev mode
+1. Start n8n in dev mode
 
 Back in this repo:
 
@@ -80,14 +80,14 @@ This node uses **OAuth2 with PKCE** to authenticate with Canva.
 
 The node requests the following OAuth scopes:
 
-| Scope                                                               | Used by                                           |
-| ------------------------------------------------------------------- | ------------------------------------------------- |
-| `asset:read` / `asset:write`                                        | Asset resource                                    |
-| `brandtemplate:content:read` / `brandtemplate:meta:read`            | Brand Template resource                           |
-| `comment:read` / `comment:write`                                    | Comment resource (Preview)                        |
-| `design:content:read` / `design:content:write` / `design:meta:read` | Design, Autofill, Export, Merge, Resize resources |
-| `folder:read` / `folder:write`                                      | Folder resource                                   |
-| `profile:read`                                                      | User resource                                     |
+| Scope                                                                                     | Used by                                           |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `asset:read` / `asset:write`                                                              | Asset resource                                    |
+| `brandtemplate:content:read` / `brandtemplate:content:write` / `brandtemplate:meta:read`  | Brand Template resource                           |
+| `comment:read` / `comment:write`                                                          | Comment resource (Preview)                        |
+| `design:content:read` / `design:content:write` / `design:meta:read`                       | Design, Autofill, Export, Merge, Resize resources |
+| `folder:read` / `folder:write`                                                            | Folder resource                                   |
+| `profile:read`                                                                            | User resource                                     |
 
 ## Operations
 
