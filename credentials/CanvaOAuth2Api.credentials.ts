@@ -9,7 +9,10 @@ export class CanvaOAuth2Api implements ICredentialType {
 
 	documentationUrl = 'https://github.com/canva-sdks/n8n-nodes-canva/tree/main#credentials';
 
-	icon: Icon = `file:canva.svg`;
+	icon: Icon = {
+		light: 'file:../nodes/Canva/icons/canva.svg',
+		dark: 'file:../nodes/Canva/icons/canva.dark.svg',
+	};
 
 	properties: INodeProperties[] = [
 		{
