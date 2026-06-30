@@ -62,7 +62,8 @@ Then enable the following scopes:
 
 Your integration's **Scopes** settings should look like this:
 
-![Your app's scopes](./.github/assets/app-scopes.png)
+<!-- markdownlint-disable-next-line MD033 -->
+<img src="./.github/assets/app-scopes.png" alt="Your app's scopes" width="50%" />
 
 ### 2. Add the credential in n8n
 
