@@ -5,15 +5,62 @@ This is an n8n community node for the [Canva Connect API](https://www.canva.dev/
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/sustainable-use-license/) workflow automation platform.
 
 - [Installation](#installation)
+- [Running n8n locally](#running-n8n-locally)
 - [Credentials](#credentials)
 - [Operations](#operations)
 - [Usage notes](#usage-notes)
 - [Resources](#resources)
-- [Version history](#version-history)
 
 ## Installation
 
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+
+## Running n8n locally
+
+If you want to try this node on your machine before publishing, you can run n8n locally and load the node straight from this repo.
+
+**Prerequisites:** Node.js 20+, npm.
+
+1. Install n8n globally
+
+```bash
+npm install -g n8n
+```
+
+2. Build the node
+
+From the root of this repo:
+
+```bash
+npm install
+npm run build
+```
+
+3. Link the package
+
+```bash
+npm link
+```
+
+Then, in a separate terminal, tell n8n to load it:
+
+```bash
+npm link @canva/n8n-nodes-canva
+```
+
+> Run this inside the n8n installation directory — typically `~/.n8n` or wherever `n8n` was installed globally. You can find it with `npm root -g`.
+
+4. Start n8n in dev mode
+
+Back in this repo:
+
+```bash
+npm run dev
+```
+
+This starts n8n at [http://localhost:5678](http://localhost:5678) and watches for file changes. The **Canva** node will be available in the node picker under *Community Nodes*.
+
+⚠️ If you're running the local instance of n8n, the your "Redirect URI" in the setup steps below should look like `http://127.0.0.1:5678/rest/oauth2-credential/callback`.
 
 ## Credentials
 
@@ -67,9 +114,9 @@ The node requests the following OAuth scopes:
 | Get                 | Get metadata for a brand template             |
 | Get Dataset         | Get the autofill dataset for a brand template |
 | List                | List brand templates accessible to the user   |
-| Publish _(Preview)_ | Publish a design as a brand template          |
+| Publish *(Preview)* | Publish a design as a brand template          |
 
-### Comment _(Preview API)_
+### Comment *(Preview API)*
 
 > ⚠️ All Comment operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
 
@@ -87,7 +134,7 @@ The node requests the following OAuth scopes:
 | ----------------------- | --------------------------------------------- |
 | Create                  | Create a new design                           |
 | Get                     | Get metadata for a design                     |
-| Get Dataset _(Preview)_ | Get the autofill dataset for a design         |
+| Get Dataset *(Preview)* | Get the autofill dataset for a design         |
 | Get Export Formats      | Get the available export formats for a design |
 | Get Pages               | Get metadata for pages in a design            |
 | List                    | List designs in the user's projects           |
@@ -115,7 +162,7 @@ The node requests the following OAuth scopes:
 | Move Item  | Move a design, asset, or folder to a different folder |
 | Update     | Rename a folder                                       |
 
-### Merge _(Preview API)_
+### Merge *(Preview API)*
 
 > ⚠️ All Merge operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
 
