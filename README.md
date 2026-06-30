@@ -1,5 +1,7 @@
 # n8n-nodes-canva
 
+![Banner](./.github/assets/github-banner.png)
+
 An n8n community node for the [Canva Connect API](https://www.canva.dev/docs/connect/). It lets you automate Canva workflows — creating and exporting designs, managing folders, uploading assets, running autofill jobs, and more — directly from n8n.
 
 - [Installation](#installation)
