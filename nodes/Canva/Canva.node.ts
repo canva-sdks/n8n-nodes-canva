@@ -29,7 +29,7 @@ export class Canva implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Canva',
 		name: 'canva',
-		icon: { light: 'file:canva.svg', dark: 'file:canva.dark.svg' },
+		icon: { light: 'file:icons/canva.svg', dark: 'file:icons/canva.dark.svg' },
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
