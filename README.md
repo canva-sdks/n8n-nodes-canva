@@ -1,8 +1,6 @@
 # n8n-nodes-canva
 
-This is an n8n community node for the [Canva Connect API](https://www.canva.dev/docs/connect/). It lets you automate Canva workflows — creating and exporting designs, managing folders, uploading assets, running autofill jobs, and more — directly from n8n.
-
-[n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/sustainable-use-license/) workflow automation platform.
+An n8n community node for the [Canva Connect API](https://www.canva.dev/docs/connect/). It lets you automate Canva workflows — creating and exporting designs, managing folders, uploading assets, running autofill jobs, and more — directly from n8n.
 
 - [Installation](#installation)
 - [Running n8n locally](#running-n8n-locally)
@@ -13,85 +11,62 @@ This is an n8n community node for the [Canva Connect API](https://www.canva.dev/
 
 ## Installation
 
+> This section is for people who already have an n8n instance running (cloud or self-hosted). If you want to test this node on your own machine first, see [Running n8n locally](#running-n8n-locally) below.
+
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
 ## Running n8n locally
 
-If you want to try this node on your machine before publishing, you can run n8n locally and load the node straight from this repo.
+This section is for developers who want to run and test this node locally.
 
 **Prerequisites:** Node.js 20+, npm.
 
-1. Install n8n globally
-
-   ```bash
-   npm install -g n8n
-   ```
-
-2. Build the node
-
-   From the root of this repo:
+1. Install dependencies and start n8n in dev mode:
 
    ```bash
    npm install
-   npm run build
-   ```
-
-3. Link the package
-
-   ```bash
-   npm link
-   ```
-
-   Then, in a separate terminal, tell n8n to load it:
-
-   ```bash
-   npm link @canva/n8n-nodes-canva
-   ```
-
-   > Run this inside the n8n installation directory — typically `~/.n8n` or wherever `n8n` was installed globally. You can find it with `npm root -g`.
-
-4. Start n8n in dev mode
-
-   Back in this repo:
-
-   ```bash
    npm run dev
    ```
 
-This starts n8n at [http://localhost:5678](http://localhost:5678) and watches for file changes. The **Canva** node will be available in the node picker under *Community Nodes*.
+   This builds the node, links it to a local n8n instance, and starts n8n at [http://127.0.0.1:5678](http://127.0.0.1:5678) with hot reload enabled. The **Canva** node will appear in the node picker under *Community Nodes*.
 
-⚠️ If you're running the local instance of n8n, the your "Redirect URI" in the setup steps below should look like `http://127.0.0.1:5678/rest/oauth2-credential/callback` (Canva doesn't allow you to use "localhost" as a domain, you must use your local IP address instead).
+2. Follow the [Credentials](#credentials) section below to connect your Canva account.
+
+   > **Note:** When running locally, use `http://127.0.0.1:5678/rest/oauth2-credential/callback` as the redirect URI in the Canva Developer Portal. Canva does not accept `localhost` — you must use the IP address.
 
 ## Credentials
 
 This node uses **OAuth2 with PKCE** to authenticate with Canva.
 
-### Prerequisites
+### 1. Create a Canva integration
 
-1. A [Canva account](https://www.canva.com/)
-2. A Canva integration registered at the [Canva Developer Portal](https://www.canva.dev/)
+Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations/connect-api) and create a new integration. Once created, open the integration's settings page to find your **Client ID**.
 
-### Setup
+Still on that settings page, add a **Redirect URL**:
 
-1. In the Canva Developer Portal, create a new integration and note your **Client ID**.
-2. Set the redirect URI to match your n8n instance (e.g. `https://your-n8n-instance.com/rest/oauth2-credential/callback`).
-3. In n8n, open **Credentials → New → Canva OAuth2 API** and enter your Client ID.
-4. Click **Connect my account** and complete the OAuth flow.
+- **Cloud or self-hosted n8n:** `https://your-n8n-instance.com/rest/oauth2-credential/callback`
+- **Local n8n:** `http://127.0.0.1:5678/rest/oauth2-credential/callback`
 
-The node requests the following OAuth scopes:
+Then enable the following scopes:
 
-| Scope                                                                                     | Used by                                           |
-| ----------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `asset:read` / `asset:write`                                                              | Asset resource                                    |
-| `brandtemplate:content:read` / `brandtemplate:content:write` / `brandtemplate:meta:read`  | Brand Template resource                           |
-| `comment:read` / `comment:write`                                                          | Comment resource (Preview)                        |
-| `design:content:read` / `design:content:write` / `design:meta:read`                       | Design, Autofill, Export, Merge, Resize resources |
-| `folder:read` / `folder:write`                                                            | Folder resource                                   |
-| `profile:read`                                                                            | User resource                                     |
+| Scope                                                                                    | Used by                                           |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `asset:read` / `asset:write`                                                             | Asset resource                                    |
+| `brandtemplate:content:read` / `brandtemplate:content:write` / `brandtemplate:meta:read` | Brand Template resource                           |
+| `comment:read` / `comment:write`                                                         | Comment resource (Preview)                        |
+| `design:content:read` / `design:content:write` / `design:meta:read`                      | Design, Autofill, Export, Merge, Resize resources |
+| `folder:read` / `folder:write`                                                           | Folder resource                                   |
+| `profile:read`                                                                           | User resource                                     |
 
-Your app's "Scopes" should look like that:
+Your integration's **Scopes** settings should look like this:
 
-![Your app's scopes](./.github/assets//app-scopes.png)
+![Your app's scopes](./.github/assets/app-scopes.png)
+
+### 2. Add the credential in n8n
+
+1. In n8n, open **Credentials → New → Canva OAuth2 API**.
+2. Enter the **Client ID** from the Canva Developer Portal.
+3. Click **Connect my account** and complete the OAuth flow.
 
 ## Operations
 
@@ -205,7 +180,7 @@ If a job fails, the node throws an error with the Canva error details.
 
 ### Preview APIs
 
-Operations marked **(Preview)** use endpoints that are still in preview on the Canva platform. They may change without notice and **cannot be used in integrations submitted to Canva's public integration review**. Use them only for internal or development workflows.
+Operations marked *(Preview)* use endpoints that are still in preview on the Canva platform. They may change without notice and **cannot be used in integrations submitted to Canva's public integration review**. Use them only for internal or development workflows.
 
 ### Moving items
 
