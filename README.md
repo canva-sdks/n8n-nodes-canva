@@ -27,7 +27,7 @@ If you want to try this node on your machine before publishing, you can run n8n 
 npm install -g n8n
 ```
 
-1. Build the node
+2. Build the node
 
 From the root of this repo:
 
@@ -36,7 +36,7 @@ npm install
 npm run build
 ```
 
-1. Link the package
+3. Link the package
 
 ```bash
 npm link
@@ -50,7 +50,7 @@ npm link @canva/n8n-nodes-canva
 
 > Run this inside the n8n installation directory — typically `~/.n8n` or wherever `n8n` was installed globally. You can find it with `npm root -g`.
 
-1. Start n8n in dev mode
+4. Start n8n in dev mode
 
 Back in this repo:
 
@@ -60,7 +60,7 @@ npm run dev
 
 This starts n8n at [http://localhost:5678](http://localhost:5678) and watches for file changes. The **Canva** node will be available in the node picker under *Community Nodes*.
 
-⚠️ If you're running the local instance of n8n, the your "Redirect URI" in the setup steps below should look like `http://127.0.0.1:5678/rest/oauth2-credential/callback`.
+⚠️ If you're running the local instance of n8n, the your "Redirect URI" in the setup steps below should look like `http://127.0.0.1:5678/rest/oauth2-credential/callback` (Canva doesn't allow you to use "localhost" as a domain, you must use your local IP address instead).
 
 ## Credentials
 
