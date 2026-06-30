@@ -23,40 +23,40 @@ If you want to try this node on your machine before publishing, you can run n8n 
 
 1. Install n8n globally
 
-```bash
-npm install -g n8n
-```
+   ```bash
+   npm install -g n8n
+   ```
 
 2. Build the node
 
-From the root of this repo:
+   From the root of this repo:
 
-```bash
-npm install
-npm run build
-```
+   ```bash
+   npm install
+   npm run build
+   ```
 
 3. Link the package
 
-```bash
-npm link
-```
+   ```bash
+   npm link
+   ```
 
-Then, in a separate terminal, tell n8n to load it:
+   Then, in a separate terminal, tell n8n to load it:
 
-```bash
-npm link @canva/n8n-nodes-canva
-```
+   ```bash
+   npm link @canva/n8n-nodes-canva
+   ```
 
-> Run this inside the n8n installation directory — typically `~/.n8n` or wherever `n8n` was installed globally. You can find it with `npm root -g`.
+   > Run this inside the n8n installation directory — typically `~/.n8n` or wherever `n8n` was installed globally. You can find it with `npm root -g`.
 
 4. Start n8n in dev mode
 
-Back in this repo:
+   Back in this repo:
 
-```bash
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
 
 This starts n8n at [http://localhost:5678](http://localhost:5678) and watches for file changes. The **Canva** node will be available in the node picker under *Community Nodes*.
 
