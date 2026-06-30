@@ -89,6 +89,10 @@ The node requests the following OAuth scopes:
 | `folder:read` / `folder:write`                                                            | Folder resource                                   |
 | `profile:read`                                                                            | User resource                                     |
 
+Your app's "Scopes" should look like that:
+
+![Your app's scopes](./.github/assets//app-scopes.png)
+
 ## Operations
 
 ### Asset
