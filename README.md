@@ -30,11 +30,24 @@ This section is for developers who want to run and test this node locally.
    npm run dev
    ```
 
-   This builds the node, links it to a local n8n instance, and starts n8n at [http://127.0.0.1:5678](http://127.0.0.1:5678) with hot reload enabled. The **Canva** node will appear in the node picker under *Community Nodes*.
+   This builds the node, links it to a local n8n instance, and starts n8n at [http://127.0.0.1:5678](http://127.0.0.1:5678) with hot reload enabled. The **Canva** node will appear in the node picker under _Community Nodes_.
 
 2. Follow the [Credentials](#credentials) section below to connect your Canva account.
 
    > **Note:** When running locally, use `http://127.0.0.1:5678/rest/oauth2-credential/callback` as the redirect URI in the Canva Developer Portal. Canva does not accept `localhost` — you must use the IP address.
+
+### Troubleshooting
+
+**`npm run dev` fails with `EACCES: permission denied, rename ...` inside `~/.npm/_cacache`**
+
+`npm run dev` starts n8n via `npx n8n@latest`, which downloads n8n through your machine's shared npm cache (`~/.npm`). If that cache contains files owned by another user — usually root, left behind by running npm with `sudo` at some point — the download fails with `EACCES`/`EEXIST` rename errors. Reclaim ownership of the cache and retry:
+
+```bash
+sudo chown -R $(id -u):$(id -g) ~/.npm
+npm run dev
+```
+
+`npm run dev` now checks for this automatically before starting and will print the fix if your cache is affected. To avoid the problem recurring, never run npm with `sudo` — use a Node version manager (nvm, fnm, Volta, etc.) so global installs don't need elevated permissions.
 
 ## Credentials
 
@@ -96,9 +109,9 @@ Your integration's **Scopes** settings should look like this:
 | Get                 | Get metadata for a brand template             |
 | Get Dataset         | Get the autofill dataset for a brand template |
 | List                | List brand templates accessible to the user   |
-| Publish *(Preview)* | Publish a design as a brand template          |
+| Publish _(Preview)_ | Publish a design as a brand template          |
 
-### Comment *(Preview API)*
+### Comment _(Preview API)_
 
 > ⚠️ All Comment operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
 
@@ -116,7 +129,7 @@ Your integration's **Scopes** settings should look like this:
 | ----------------------- | --------------------------------------------- |
 | Create                  | Create a new design                           |
 | Get                     | Get metadata for a design                     |
-| Get Dataset *(Preview)* | Get the autofill dataset for a design         |
+| Get Dataset _(Preview)_ | Get the autofill dataset for a design         |
 | Get Export Formats      | Get the available export formats for a design |
 | Get Pages               | Get metadata for pages in a design            |
 | List                    | List designs in the user's projects           |
@@ -144,7 +157,7 @@ Your integration's **Scopes** settings should look like this:
 | Move Item  | Move a design, asset, or folder to a different folder |
 | Update     | Rename a folder                                       |
 
-### Merge *(Preview API)*
+### Merge _(Preview API)_
 
 > ⚠️ All Merge operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
 
@@ -183,7 +196,7 @@ If a job fails, the node throws an error with the Canva error details.
 
 ### Preview APIs
 
-Operations marked *(Preview)* use endpoints that are still in preview on the Canva platform. They may change without notice and **cannot be used in integrations submitted to Canva's public integration review**. Use them only for internal or development workflows.
+Operations marked _(Preview)_ use endpoints that are still in preview on the Canva platform. They may change without notice and **cannot be used in integrations submitted to Canva's public integration review**. Use them only for internal or development workflows.
 
 ### Moving items
 
