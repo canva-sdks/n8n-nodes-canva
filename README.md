@@ -21,7 +21,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 This section is for developers who want to run and test this node locally.
 
-**Prerequisites:** Node.js 20+, npm.
+**Prerequisites:** Node.js 24+, npm.
 
 1. Install dependencies and start n8n in dev mode:
 
