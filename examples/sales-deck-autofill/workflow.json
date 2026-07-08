@@ -1,0 +1,93 @@
+{
+	"name": "Canva — Sales deck autofill",
+	"nodes": [
+		{
+			"parameters": {
+				"pollTimes": {
+					"item": [{ "mode": "everyMinute" }]
+				},
+				"documentId": {
+					"__rl": true,
+					"mode": "url",
+					"value": "https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit"
+				},
+				"sheetName": {
+					"__rl": true,
+					"mode": "list",
+					"value": ""
+				},
+				"event": "rowAdded",
+				"options": {}
+			},
+			"id": "a1f8c3b0-0001-4a6e-9b1a-sales0000001",
+			"name": "New deck request (Sheet row)",
+			"type": "n8n-nodes-base.googleSheetsTrigger",
+			"typeVersion": 1,
+			"position": [0, 0]
+		},
+		{
+			"parameters": {
+				"resource": "autofill",
+				"operation": "create",
+				"brandTemplateId": "YOUR_BRAND_TEMPLATE_ID",
+				"data": "={{ JSON.stringify({\n  client_name: { type: 'text', text: $json.client_name },\n  headline: { type: 'text', text: $json.headline },\n  key_points: { type: 'text', text: $json.key_points },\n  prepared_by: { type: 'text', text: 'Prepared by ' + $json.prepared_by }\n}) }}",
+				"title": "={{ 'Pitch deck — ' + $json.client_name }}",
+				"pollInterval": 2000,
+				"maxWait": 120
+			},
+			"id": "a1f8c3b0-0002-4a6e-9b1a-sales0000002",
+			"name": "Create deck from brand template",
+			"type": "@canva/n8n-nodes-canva.canva",
+			"typeVersion": 1,
+			"position": [220, 0]
+		},
+		{
+			"parameters": {
+				"resource": "export",
+				"operation": "export",
+				"designId": "={{ $json.job.result.design.id }}",
+				"format": "pptx",
+				"pages": "",
+				"pollInterval": 2000,
+				"maxWait": 120
+			},
+			"id": "a1f8c3b0-0003-4a6e-9b1a-sales0000003",
+			"name": "Export deck as PPTX",
+			"type": "@canva/n8n-nodes-canva.canva",
+			"typeVersion": 1,
+			"position": [440, 0]
+		},
+		{
+			"parameters": {
+				"resource": "message",
+				"operation": "post",
+				"select": "channel",
+				"channelId": {
+					"__rl": true,
+					"mode": "name",
+					"value": "#sales"
+				},
+				"text": "=:tada: Pitch deck for *{{ $('New deck request (Sheet row)').item.json.client_name }}* is ready!\n\n• Download (PPTX, link expires in 24h): {{ $json.job.urls[0] }}\n• Edit in Canva: {{ $('Create deck from brand template').item.json.job.result.design.url }}",
+				"otherOptions": {}
+			},
+			"id": "a1f8c3b0-0004-4a6e-9b1a-sales0000004",
+			"name": "Notify the rep in Slack",
+			"type": "n8n-nodes-base.slack",
+			"typeVersion": 2.2,
+			"position": [660, 0]
+		}
+	],
+	"connections": {
+		"New deck request (Sheet row)": {
+			"main": [[{ "node": "Create deck from brand template", "type": "main", "index": 0 }]]
+		},
+		"Create deck from brand template": {
+			"main": [[{ "node": "Export deck as PPTX", "type": "main", "index": 0 }]]
+		},
+		"Export deck as PPTX": {
+			"main": [[{ "node": "Notify the rep in Slack", "type": "main", "index": 0 }]]
+		}
+	},
+	"settings": { "executionOrder": "v1" },
+	"pinData": {}
+}

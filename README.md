@@ -195,6 +195,7 @@ The **Autofill → Create Job** operation requires a `data` object whose keys mu
 
 ## Resources
 
+- [Ready-to-import example workflows](./examples/)
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
 - [Canva Connect API reference](https://www.canva.dev/docs/connect/api-reference/)
 - [Canva Developer Portal](https://www.canva.dev/)

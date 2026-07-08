@@ -1,0 +1,258 @@
+{
+	"name": "Canva — Monday.com creative request",
+	"nodes": [
+		{
+			"parameters": {
+				"httpMethod": "POST",
+				"path": "monday-creative-request",
+				"responseMode": "responseNode",
+				"options": {}
+			},
+			"id": "b2e9d4c1-0001-4b7f-8c2b-monday000001",
+			"name": "Monday webhook",
+			"type": "n8n-nodes-base.webhook",
+			"typeVersion": 2,
+			"position": [0, 0],
+			"webhookId": "c3f0e5d2-1111-4c8a-9d3c-monday000000"
+		},
+		{
+			"parameters": {
+				"respondWith": "json",
+				"responseBody": "={{ JSON.stringify({ challenge: $json.body.challenge }) }}",
+				"options": {}
+			},
+			"id": "b2e9d4c1-0002-4b7f-8c2b-monday000002",
+			"name": "Respond to Monday",
+			"type": "n8n-nodes-base.respondToWebhook",
+			"typeVersion": 1.1,
+			"position": [200, 0]
+		},
+		{
+			"parameters": {
+				"conditions": {
+					"options": {
+						"caseSensitive": true,
+						"leftValue": "",
+						"typeValidation": "loose"
+					},
+					"conditions": [
+						{
+							"id": "cond-0001",
+							"leftValue": "={{ $json.body.event !== undefined }}",
+							"rightValue": "",
+							"operator": { "type": "boolean", "operation": "true", "singleValue": true }
+						}
+					],
+					"combinator": "and"
+				},
+				"options": {}
+			},
+			"id": "b2e9d4c1-0003-4b7f-8c2b-monday000003",
+			"name": "Is design request?",
+			"type": "n8n-nodes-base.if",
+			"typeVersion": 2,
+			"position": [400, 0]
+		},
+		{
+			"parameters": {
+				"resource": "boardItem",
+				"operation": "get",
+				"itemId": "={{ $json.body.event.pulseId }}"
+			},
+			"id": "b2e9d4c1-0004-4b7f-8c2b-monday000004",
+			"name": "Get request item",
+			"type": "n8n-nodes-base.mondayCom",
+			"typeVersion": 1,
+			"position": [600, 0]
+		},
+		{
+			"parameters": {
+				"jsCode": "// Map your Monday column IDs to design fields.\n// To find a column ID: board → column menu (⋮) → Settings, or inspect the\n// column_values array in this node's input data.\nconst COLUMNS = {\n\theadline: 'text', // Text column with the main copy\n\tsubheadline: 'text8', // Text column with supporting copy\n\timage_url: 'link', // Link column with a *publicly accessible* image URL\n};\n\nconst item = $input.first().json;\nconst cols = {};\nfor (const cv of item.column_values ?? []) cols[cv.id] = cv;\n\nconst text = (id) => cols[id]?.text ?? '';\nconst linkUrl = (id) => {\n\ttry {\n\t\treturn JSON.parse(cols[id]?.value ?? 'null')?.url ?? cols[id]?.text ?? '';\n\t} catch {\n\t\treturn cols[id]?.text ?? '';\n\t}\n};\n\nreturn [\n\t{\n\t\tjson: {\n\t\t\trequest_name: item.name,\n\t\t\theadline: text(COLUMNS.headline),\n\t\t\tsubheadline: text(COLUMNS.subheadline),\n\t\t\timage_url: linkUrl(COLUMNS.image_url),\n\t\t},\n\t},\n];"
+			},
+			"id": "b2e9d4c1-0005-4b7f-8c2b-monday000005",
+			"name": "Extract request fields",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [800, 0]
+		},
+		{
+			"parameters": {
+				"conditions": {
+					"options": {
+						"caseSensitive": true,
+						"leftValue": "",
+						"typeValidation": "loose"
+					},
+					"conditions": [
+						{
+							"id": "cond-0002",
+							"leftValue": "={{ ($json.image_url || '').trim() !== '' }}",
+							"rightValue": "",
+							"operator": { "type": "boolean", "operation": "true", "singleValue": true }
+						}
+					],
+					"combinator": "and"
+				},
+				"options": {}
+			},
+			"id": "b2e9d4c1-0006-4b7f-8c2b-monday000006",
+			"name": "Has image?",
+			"type": "n8n-nodes-base.if",
+			"typeVersion": 2,
+			"position": [1000, 0]
+		},
+		{
+			"parameters": {
+				"resource": "asset",
+				"operation": "upload",
+				"name": "={{ $json.request_name + ' — hero image' }}",
+				"url": "={{ $json.image_url }}",
+				"pollInterval": 2000,
+				"maxWait": 120
+			},
+			"id": "b2e9d4c1-0007-4b7f-8c2b-monday000007",
+			"name": "Upload image to Canva",
+			"type": "CUSTOM.canva",
+			"typeVersion": 1,
+			"position": [1200, -100]
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{
+							"id": "set-0001",
+							"name": "request_name",
+							"value": "={{ $('Extract request fields').item.json.request_name }}",
+							"type": "string"
+						},
+						{
+							"id": "set-0002",
+							"name": "headline",
+							"value": "={{ $('Extract request fields').item.json.headline }}",
+							"type": "string"
+						},
+						{
+							"id": "set-0003",
+							"name": "subheadline",
+							"value": "={{ $('Extract request fields').item.json.subheadline }}",
+							"type": "string"
+						},
+						{
+							"id": "set-0004",
+							"name": "canva_asset_id",
+							"value": "={{ $json.job.asset.id }}",
+							"type": "string"
+						}
+					]
+				},
+				"options": {}
+			},
+			"id": "b2e9d4c1-0008-4b7f-8c2b-monday000008",
+			"name": "Attach asset ID",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [1400, -100]
+		},
+		{
+			"parameters": {
+				"resource": "autofill",
+				"operation": "create",
+				"brandTemplateId": "YOUR_BRAND_TEMPLATE_ID",
+				"data": "={{ JSON.stringify(Object.assign(\n  {\n    headline: { type: 'text', text: $json.headline },\n    subheadline: { type: 'text', text: $json.subheadline }\n  },\n  $json.canva_asset_id ? { hero_image: { type: 'image', asset_id: $json.canva_asset_id } } : {}\n)) }}",
+				"title": "={{ $json.request_name }}",
+				"pollInterval": 2000,
+				"maxWait": 120
+			},
+			"id": "b2e9d4c1-0009-4b7f-8c2b-monday000009",
+			"name": "Create design from brand template",
+			"type": "CUSTOM.canva",
+			"typeVersion": 1,
+			"position": [1600, 0]
+		},
+		{
+			"parameters": {
+				"resource": "export",
+				"operation": "export",
+				"designId": "={{ $json.job.result.design.id }}",
+				"format": "png",
+				"pages": "",
+				"pollInterval": 2000,
+				"maxWait": 120
+			},
+			"id": "b2e9d4c1-0010-4b7f-8c2b-monday000010",
+			"name": "Export design as PNG",
+			"type": "CUSTOM.canva",
+			"typeVersion": 1,
+			"position": [1800, 0]
+		},
+		{
+			"parameters": {
+				"resource": "boardItem",
+				"operation": "addUpdate",
+				"itemId": "={{ $('Monday webhook').item.json.body.event.pulseId }}",
+				"value": "=✅ Design ready!\nDownload (expires in 24h): {{ $json.job.urls[0] }}\nEdit in Canva: {{ $('Create design from brand template').item.json.job.result.design.url }}"
+			},
+			"id": "b2e9d4c1-0011-4b7f-8c2b-monday000011",
+			"name": "Post update on Monday item",
+			"type": "n8n-nodes-base.mondayCom",
+			"typeVersion": 1,
+			"position": [2000, 0]
+		},
+		{
+			"parameters": {
+				"resource": "boardItem",
+				"operation": "changeColumnValue",
+				"boardId": "={{ $('Monday webhook').item.json.body.event.boardId }}",
+				"itemId": "={{ $('Monday webhook').item.json.body.event.pulseId }}",
+				"columnId": "status",
+				"value": "={{ JSON.stringify({ label: 'Done' }) }}"
+			},
+			"id": "b2e9d4c1-0012-4b7f-8c2b-monday000012",
+			"name": "Set request status",
+			"type": "n8n-nodes-base.mondayCom",
+			"typeVersion": 1,
+			"position": [2200, 0]
+		}
+	],
+	"connections": {
+		"Monday webhook": {
+			"main": [[{ "node": "Respond to Monday", "type": "main", "index": 0 }]]
+		},
+		"Respond to Monday": {
+			"main": [[{ "node": "Is design request?", "type": "main", "index": 0 }]]
+		},
+		"Is design request?": {
+			"main": [[{ "node": "Get request item", "type": "main", "index": 0 }], []]
+		},
+		"Get request item": {
+			"main": [[{ "node": "Extract request fields", "type": "main", "index": 0 }]]
+		},
+		"Extract request fields": {
+			"main": [[{ "node": "Has image?", "type": "main", "index": 0 }]]
+		},
+		"Has image?": {
+			"main": [
+				[{ "node": "Upload image to Canva", "type": "main", "index": 0 }],
+				[{ "node": "Create design from brand template", "type": "main", "index": 0 }]
+			]
+		},
+		"Upload image to Canva": {
+			"main": [[{ "node": "Attach asset ID", "type": "main", "index": 0 }]]
+		},
+		"Attach asset ID": {
+			"main": [[{ "node": "Create design from brand template", "type": "main", "index": 0 }]]
+		},
+		"Create design from brand template": {
+			"main": [[{ "node": "Export design as PNG", "type": "main", "index": 0 }]]
+		},
+		"Export design as PNG": {
+			"main": [[{ "node": "Post update on Monday item", "type": "main", "index": 0 }]]
+		},
+		"Post update on Monday item": {
+			"main": [[{ "node": "Set request status", "type": "main", "index": 0 }]]
+		}
+	},
+	"settings": { "executionOrder": "v1" },
+	"pinData": {}
+}
