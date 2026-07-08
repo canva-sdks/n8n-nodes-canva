@@ -44,7 +44,7 @@ This node uses **OAuth2 with PKCE** to authenticate with Canva.
 
 Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations/connect-api) and create a new integration. Once created, open the integration's settings page to find your **Client ID**.
 
-Still on that settings page, add a **Redirect URL**:
+Still on that settings page, in the "Authentication" tab, add the following **Redirect URL**:
 
 - **Cloud or self-hosted n8n:** `https://your-n8n-instance.com/rest/oauth2-credential/callback`
 - **Local n8n:** `http://127.0.0.1:5678/rest/oauth2-credential/callback`
