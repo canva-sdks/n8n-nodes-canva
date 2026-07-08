@@ -52,6 +52,6 @@
 		"n8n-workflow": "*"
 	},
 	"engines": {
-		"node": ">=20"
+		"node": ">=24"
 	}
 }
