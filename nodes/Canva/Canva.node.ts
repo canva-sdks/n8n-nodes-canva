@@ -317,7 +317,7 @@ export class Canva implements INodeType {
 						const message = this.getNodeParameter('message', i) as string;
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
-						const body: IDataObject = { message };
+						const body: IDataObject = { message_plaintext: message };
 						if (additionalFields.assignee_id) body.assignee_id = additionalFields.assignee_id;
 
 						responseData = await this.helpers.httpRequestWithAuthentication.call(
@@ -341,7 +341,7 @@ export class Canva implements INodeType {
 							{
 								method: 'POST',
 								url: `${BASE_URL}/designs/${designId}/comments/${threadId}/replies`,
-								body: { message },
+								body: { message_plaintext: message },
 								json: true,
 							},
 						);
