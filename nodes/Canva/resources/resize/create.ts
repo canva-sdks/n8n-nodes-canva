@@ -29,8 +29,9 @@ export const resizeCreateDescription: INodeProperties[] = [
 		name: 'presetName',
 		type: 'options',
 		options: [
-			{ name: 'Document', value: 'doc' },
-			{ name: 'Email', value: 'email' },
+			// Note: the API's shared preset enum also includes 'doc' and 'email', but the
+			// Resize endpoint rejects them — designs can't be resized to (or from) Canva
+			// docs and emails. See https://www.canva.dev/docs/connect/api-reference/resizes/create-design-resize-job/
 			{ name: 'Presentation', value: 'presentation' },
 			{ name: 'Whiteboard', value: 'whiteboard' },
 		],
