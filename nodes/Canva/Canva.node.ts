@@ -944,6 +944,8 @@ export class Canva implements INodeType {
 					continue;
 				}
 
+				// Both constructors return the original error unchanged when passed their
+				// own type, so no context is lost here.
 				if (error instanceof NodeOperationError) {
 					throw new NodeOperationError(this.getNode(), error as Error, { itemIndex: i });
 				}
