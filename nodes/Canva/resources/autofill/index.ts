@@ -1,5 +1,6 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { autofillCreateDescription } from './create';
+import { autofillPremiumNoticeDescription } from './premiumNotice';
 
 export const autofillOperations: INodeProperties[] = [
 	{
@@ -22,5 +23,6 @@ export const autofillOperations: INodeProperties[] = [
 
 export const autofillDescription: INodeProperties[] = [
 	...autofillOperations,
+	...autofillPremiumNoticeDescription,
 	...autofillCreateDescription,
 ];
