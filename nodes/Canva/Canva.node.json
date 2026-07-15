@@ -1,8 +1,9 @@
 {
-	"node": "n8n-nodes-canva",
+	"node": "@canva/n8n-nodes-canva",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
-	"categories": ["Development", "Developer Tools"],
+	"categories": ["Marketing", "Productivity"],
+	"alias": ["design", "image", "template", "autofill", "export"],
 	"resources": {
 		"credentialDocumentation": [
 			{
