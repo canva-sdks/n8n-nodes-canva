@@ -67,8 +67,6 @@ When asked to build or update a node in this project, follow these steps:
   allow the user to manually test the node in n8n to verify that it does what
   is expected
 - Make sure to use **proper types whenever possible**
-- If you are updating the npm package version, make sure to **update
-  CHANGELOG.md** in the root of the repository
 
 ## CLI
 
