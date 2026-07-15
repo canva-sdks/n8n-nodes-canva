@@ -583,6 +583,11 @@ export class Canva implements INodeType {
 						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
 
 						const exportFormat: IDataObject = { type: format };
+						if (format === 'jpg') {
+							exportFormat.quality = this.getNodeParameter('jpgQuality', i) as number;
+						} else if (format === 'mp4') {
+							exportFormat.quality = this.getNodeParameter('mp4Quality', i) as string;
+						}
 						if (pagesRaw.trim()) {
 							exportFormat.pages = pagesRaw
 								.split(',')
