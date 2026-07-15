@@ -91,7 +91,7 @@ export class Canva implements INodeType {
 						const assetId = this.getNodeParameter('assetId', i) as string;
 						await this.helpers.httpRequestWithAuthentication.call(this, 'canvaOAuth2Api', {
 							method: 'DELETE',
-							url: `${BASE_URL}/assets/${assetId}`,
+							url: `${BASE_URL}/assets/${encodeURIComponent(assetId)}`,
 							json: true,
 						});
 						responseData = { success: true };
@@ -100,7 +100,11 @@ export class Canva implements INodeType {
 						responseData = await this.helpers.httpRequestWithAuthentication.call(
 							this,
 							'canvaOAuth2Api',
-							{ method: 'GET', url: `${BASE_URL}/assets/${assetId}`, json: true },
+							{
+								method: 'GET',
+								url: `${BASE_URL}/assets/${encodeURIComponent(assetId)}`,
+								json: true,
+							},
 						);
 					} else if (operation === 'update') {
 						const assetId = this.getNodeParameter('assetId', i) as string;
@@ -120,7 +124,7 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{
 								method: 'PATCH',
-								url: `${BASE_URL}/assets/${assetId}`,
+								url: `${BASE_URL}/assets/${encodeURIComponent(assetId)}`,
 								body,
 								json: true,
 							},
@@ -257,7 +261,11 @@ export class Canva implements INodeType {
 						responseData = await this.helpers.httpRequestWithAuthentication.call(
 							this,
 							'canvaOAuth2Api',
-							{ method: 'GET', url: `${BASE_URL}/brand-templates/${brandTemplateId}`, json: true },
+							{
+								method: 'GET',
+								url: `${BASE_URL}/brand-templates/${encodeURIComponent(brandTemplateId)}`,
+								json: true,
+							},
 						);
 					} else if (operation === 'getDataset') {
 						const brandTemplateId = this.getNodeParameter('brandTemplateId', i) as string;
@@ -266,7 +274,7 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{
 								method: 'GET',
-								url: `${BASE_URL}/brand-templates/${brandTemplateId}/dataset`,
+								url: `${BASE_URL}/brand-templates/${encodeURIComponent(brandTemplateId)}/dataset`,
 								json: true,
 							},
 						);
@@ -326,7 +334,7 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{
 								method: 'POST',
-								url: `${BASE_URL}/designs/${designId}/comments`,
+								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/comments`,
 								body,
 								json: true,
 							},
@@ -341,7 +349,7 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{
 								method: 'POST',
-								url: `${BASE_URL}/designs/${designId}/comments/${threadId}/replies`,
+								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}/replies`,
 								body: { message_plaintext: message },
 								json: true,
 							},
@@ -354,7 +362,7 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{
 								method: 'GET',
-								url: `${BASE_URL}/designs/${designId}/comments/${threadId}`,
+								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}`,
 								json: true,
 							},
 						);
@@ -367,7 +375,7 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{
 								method: 'GET',
-								url: `${BASE_URL}/designs/${designId}/comments/${threadId}/replies/${replyId}`,
+								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}/replies/${encodeURIComponent(replyId)}`,
 								json: true,
 							},
 						);
@@ -391,7 +399,7 @@ export class Canva implements INodeType {
 								'canvaOAuth2Api',
 								{
 									method: 'GET',
-									url: `${BASE_URL}/designs/${designId}/comments/${threadId}/replies`,
+									url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}/replies`,
 									qs,
 									json: true,
 								},
@@ -441,7 +449,7 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{
 								method: 'GET',
-								url: `${BASE_URL}/designs/${designId}`,
+								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}`,
 								json: true,
 							},
 						);
@@ -452,7 +460,7 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{
 								method: 'GET',
-								url: `${BASE_URL}/designs/${designId}/dataset`,
+								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/dataset`,
 								json: true,
 							},
 						);
@@ -463,7 +471,7 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{
 								method: 'GET',
-								url: `${BASE_URL}/designs/${designId}/pages`,
+								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/pages`,
 								json: true,
 							},
 						);
@@ -474,7 +482,7 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{
 								method: 'GET',
-								url: `${BASE_URL}/designs/${designId}/export-formats`,
+								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/export-formats`,
 								json: true,
 							},
 						);
@@ -649,7 +657,7 @@ export class Canva implements INodeType {
 						const folderId = this.getNodeParameter('folderId', i) as string;
 						await this.helpers.httpRequestWithAuthentication.call(this, 'canvaOAuth2Api', {
 							method: 'DELETE',
-							url: `${BASE_URL}/folders/${folderId}`,
+							url: `${BASE_URL}/folders/${encodeURIComponent(folderId)}`,
 							json: true,
 						});
 						responseData = { success: true };
@@ -658,7 +666,11 @@ export class Canva implements INodeType {
 						responseData = await this.helpers.httpRequestWithAuthentication.call(
 							this,
 							'canvaOAuth2Api',
-							{ method: 'GET', url: `${BASE_URL}/folders/${folderId}`, json: true },
+							{
+								method: 'GET',
+								url: `${BASE_URL}/folders/${encodeURIComponent(folderId)}`,
+								json: true,
+							},
 						);
 					} else if (operation === 'listItems') {
 						const folderId = this.getNodeParameter('folderId', i) as string;
@@ -684,7 +696,7 @@ export class Canva implements INodeType {
 								'canvaOAuth2Api',
 								{
 									method: 'GET',
-									url: `${BASE_URL}/folders/${folderId}/items`,
+									url: `${BASE_URL}/folders/${encodeURIComponent(folderId)}/items`,
 									qs,
 									json: true,
 								},
@@ -714,7 +726,7 @@ export class Canva implements INodeType {
 							'canvaOAuth2Api',
 							{
 								method: 'PATCH',
-								url: `${BASE_URL}/folders/${folderId}`,
+								url: `${BASE_URL}/folders/${encodeURIComponent(folderId)}`,
 								body: { name },
 								json: true,
 							},
