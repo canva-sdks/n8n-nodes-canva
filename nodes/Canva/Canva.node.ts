@@ -730,10 +730,19 @@ export class Canva implements INodeType {
 						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
 						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
 
-						const operations: IDataObject[] =
-							typeof operationsRaw === 'string'
-								? (JSON.parse(operationsRaw) as IDataObject[])
-								: operationsRaw;
+						let operations: IDataObject[];
+						try {
+							operations =
+								typeof operationsRaw === 'string'
+									? (JSON.parse(operationsRaw) as IDataObject[])
+									: operationsRaw;
+						} catch {
+							throw new NodeOperationError(
+								this.getNode(),
+								'The "Operations" field is not valid JSON',
+								{ itemIndex: i },
+							);
+						}
 
 						const body: IDataObject = { type: mergeType, operations };
 
