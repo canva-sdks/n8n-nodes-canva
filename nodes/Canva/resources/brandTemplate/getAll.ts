@@ -1,12 +1,12 @@
 import type { INodeProperties } from 'n8n-workflow';
 
-export const brandTemplateListDescription: INodeProperties[] = [
+export const brandTemplateGetAllDescription: INodeProperties[] = [
 	{
 		displayName: 'Return All',
 		name: 'returnAll',
 		type: 'boolean',
 		default: false,
-		displayOptions: { show: { resource: ['brandTemplate'], operation: ['list'] } },
+		displayOptions: { show: { resource: ['brandTemplate'], operation: ['getAll'] } },
 		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
@@ -16,7 +16,7 @@ export const brandTemplateListDescription: INodeProperties[] = [
 		typeOptions: { minValue: 1, maxValue: 100 },
 		default: 50,
 		displayOptions: {
-			show: { resource: ['brandTemplate'], operation: ['list'], returnAll: [false] },
+			show: { resource: ['brandTemplate'], operation: ['getAll'], returnAll: [false] },
 		},
 		description: 'Max number of results to return',
 	},
@@ -26,7 +26,7 @@ export const brandTemplateListDescription: INodeProperties[] = [
 		type: 'collection',
 		placeholder: 'Add Filter',
 		default: {},
-		displayOptions: { show: { resource: ['brandTemplate'], operation: ['list'] } },
+		displayOptions: { show: { resource: ['brandTemplate'], operation: ['getAll'] } },
 		options: [
 			{
 				displayName: 'Search Query',

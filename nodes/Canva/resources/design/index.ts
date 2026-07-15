@@ -3,9 +3,9 @@ import { designCreateDescription } from './create';
 import { designGetDescription } from './get';
 import { designGetDatasetDescription } from './getDataset';
 import { designGetDatasetPreviewNoticeDescription } from './getDatasetPreviewNotice';
+import { designGetAllDescription } from './getAll';
 import { designGetExportFormatsDescription } from './getExportFormats';
 import { designGetPagesDescription } from './getPages';
-import { designListDescription } from './list';
 
 export const designOperations: INodeProperties[] = [
 	{
@@ -40,16 +40,16 @@ export const designOperations: INodeProperties[] = [
 				action: 'Get design export formats',
 			},
 			{
+				name: 'Get Many',
+				value: 'getAll',
+				description: "Get many designs from the user's projects",
+				action: 'Get many designs',
+			},
+			{
 				name: 'Get Pages',
 				value: 'getPages',
 				description: 'Get metadata for pages in a design',
 				action: 'Get design pages',
-			},
-			{
-				name: 'List',
-				value: 'list',
-				description: "List designs in the user's projects",
-				action: 'List designs',
 			},
 		],
 		default: 'create',
@@ -64,5 +64,5 @@ export const designDescription: INodeProperties[] = [
 	...designGetDatasetDescription,
 	...designGetExportFormatsDescription,
 	...designGetPagesDescription,
-	...designListDescription,
+	...designGetAllDescription,
 ];

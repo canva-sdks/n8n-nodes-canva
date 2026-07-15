@@ -106,7 +106,7 @@ Your integration's **Scopes** settings should look like this:
 | ------------------- | --------------------------------------------- |
 | Get                 | Get metadata for a brand template             |
 | Get Dataset         | Get the autofill dataset for a brand template |
-| List                | List brand templates accessible to the user   |
+| Get Many            | Get many brand templates accessible to the user |
 | Publish _(Preview)_ | Publish a design as a brand template          |
 
 ### Comment _(Preview API)_
@@ -129,8 +129,8 @@ Your integration's **Scopes** settings should look like this:
 | Get                     | Get metadata for a design                     |
 | Get Dataset _(Preview)_ | Get the autofill dataset for a design         |
 | Get Export Formats      | Get the available export formats for a design |
+| Get Many                | Get many designs from the user's projects     |
 | Get Pages               | Get metadata for pages in a design            |
-| List                    | List designs in the user's projects           |
 
 ### Design Import
 

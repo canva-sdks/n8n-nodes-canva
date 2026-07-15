@@ -1,7 +1,7 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { brandTemplateGetDescription } from './get';
+import { brandTemplateGetAllDescription } from './getAll';
 import { brandTemplateGetDatasetDescription } from './getDataset';
-import { brandTemplateListDescription } from './list';
 import { brandTemplatePublishDescription } from './publish';
 import { brandTemplatePublishPreviewNoticeDescription } from './publishPreviewNotice';
 
@@ -26,10 +26,10 @@ export const brandTemplateOperations: INodeProperties[] = [
 				action: 'Get brand template dataset',
 			},
 			{
-				name: 'List',
-				value: 'list',
-				description: "List the user's brand templates",
-				action: 'List brand templates',
+				name: 'Get Many',
+				value: 'getAll',
+				description: "Get many of the user's brand templates",
+				action: 'Get many brand templates',
 			},
 			{
 				name: 'Publish (Preview)',
@@ -38,7 +38,7 @@ export const brandTemplateOperations: INodeProperties[] = [
 				action: 'Publish a brand template',
 			},
 		],
-		default: 'list',
+		default: 'getAll',
 	},
 ];
 
@@ -46,7 +46,7 @@ export const brandTemplateDescription: INodeProperties[] = [
 	...brandTemplateOperations,
 	...brandTemplateGetDescription,
 	...brandTemplateGetDatasetDescription,
-	...brandTemplateListDescription,
+	...brandTemplateGetAllDescription,
 	...brandTemplatePublishPreviewNoticeDescription,
 	...brandTemplatePublishDescription,
 ];

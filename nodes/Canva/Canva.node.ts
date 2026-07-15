@@ -270,7 +270,7 @@ export class Canva implements INodeType {
 								json: true,
 							},
 						);
-					} else if (operation === 'list') {
+					} else if (operation === 'getAll') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const limit = returnAll ? 100 : (this.getNodeParameter('limit', i) as number);
 						const filters = this.getNodeParameter('filters', i) as IDataObject;
@@ -295,7 +295,7 @@ export class Canva implements INodeType {
 							allItems.push(...(resp.items ?? []));
 							continuation = resp.continuation;
 						} while (continuation && (returnAll || allItems.length < limit));
-						responseData = { items: returnAll ? allItems : allItems.slice(0, limit) };
+						responseData = returnAll ? allItems : allItems.slice(0, limit);
 					} else if (operation === 'publish') {
 						const designId = this.getNodeParameter('designId', i) as string;
 						responseData = await this.helpers.httpRequestWithAuthentication.call(
@@ -399,7 +399,7 @@ export class Canva implements INodeType {
 							allItems.push(...(resp.items ?? []));
 							continuation = resp.continuation;
 						} while (continuation && (returnAll || allItems.length < limit));
-						responseData = { items: returnAll ? allItems : allItems.slice(0, limit) };
+						responseData = returnAll ? allItems : allItems.slice(0, limit);
 					}
 				}
 
@@ -478,7 +478,7 @@ export class Canva implements INodeType {
 								json: true,
 							},
 						);
-					} else if (operation === 'list') {
+					} else if (operation === 'getAll') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const limit = returnAll ? 100 : (this.getNodeParameter('limit', i) as number);
 						const filters = this.getNodeParameter('filters', i) as IDataObject;
@@ -503,7 +503,7 @@ export class Canva implements INodeType {
 							allItems.push(...(resp.items ?? []));
 							continuation = resp.continuation;
 						} while (continuation && (returnAll || allItems.length < limit));
-						responseData = { items: returnAll ? allItems : allItems.slice(0, limit) };
+						responseData = returnAll ? allItems : allItems.slice(0, limit);
 					}
 				}
 
@@ -692,7 +692,7 @@ export class Canva implements INodeType {
 							allItems.push(...(resp.items ?? []));
 							continuation = resp.continuation;
 						} while (continuation && (returnAll || allItems.length < limit));
-						responseData = { items: returnAll ? allItems : allItems.slice(0, limit) };
+						responseData = returnAll ? allItems : allItems.slice(0, limit);
 					} else if (operation === 'moveItem') {
 						const itemId = this.getNodeParameter('itemId', i) as string;
 						const toFolderId = this.getNodeParameter('toFolderId', i) as string;
@@ -902,10 +902,19 @@ export class Canva implements INodeType {
 					);
 				}
 
-				returnData.push({
-					json: responseData as IDataObject,
-					pairedItem: { item: i },
-				});
+				if (Array.isArray(responseData)) {
+					returnData.push(
+						...this.helpers.constructExecutionMetaData(
+							this.helpers.returnJsonArray(responseData as IDataObject[]),
+							{ itemData: { item: i } },
+						),
+					);
+				} else {
+					returnData.push({
+						json: responseData as IDataObject,
+						pairedItem: { item: i },
+					});
+				}
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({
