@@ -2,7 +2,7 @@
 
 ![Banner](./.github/assets/github-banner.jpg)
 
-An n8n community node for the [Canva Connect API](https://www.canva.dev/docs/connect/). It lets you automate Canva workflows — creating and exporting designs, managing folders, uploading assets, running autofill jobs, and more — directly from n8n.
+An n8n community node for connecting Canva to n8n using the [Canva Connect API](https://www.canva.dev/docs/connect/). Create and export designs, bulk-generate from brand templates, manage assets and folders, import external files, and connect Canva to the rest of your stack.
 
 - [Installation](#installation)
 - [Running n8n locally](#running-n8n-locally)
@@ -19,7 +19,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Running n8n locally
 
-This section is for developers who want to run and test this node locally.
+> This section is for developers who want to run and test this node locally.
 
 **Prerequisites:** Node.js 24+, npm.
 
@@ -38,7 +38,7 @@ This section is for developers who want to run and test this node locally.
 
 ### Troubleshooting
 
-**`npm run dev` fails with `EACCES: permission denied, rename ...` inside `~/.npm/_cacache`**
+#### `npm run dev` fails with `EACCES: permission denied, rename ...` inside `~/.npm/_cacache`
 
 `npm run dev` starts n8n via `npx n8n@latest`, which downloads n8n through your machine's shared npm cache (`~/.npm`). If that cache contains files owned by another user — usually root, left behind by running npm with `sudo` at some point — the download fails with `EACCES`/`EEXIST` rename errors. Reclaim ownership of the cache and retry:
 
@@ -47,7 +47,7 @@ sudo chown -R $(id -u):$(id -g) ~/.npm
 npm run dev
 ```
 
-`npm run dev` now checks for this automatically before starting and will print the fix if your cache is affected. To avoid the problem recurring, never run npm with `sudo` — use a Node version manager (nvm, fnm, Volta, etc.) so global installs don't need elevated permissions.
+`npm run dev` checks for this automatically before starting and will print the fix if your cache is affected. To avoid the problem recurring, never run npm with `sudo` — use a Node version manager (nvm, fnm, Volta, etc.) so global installs don't need elevated permissions.
 
 ## Credentials
 
@@ -55,14 +55,15 @@ This node uses **OAuth2 with PKCE** to authenticate with Canva.
 
 ### 1. Create a Canva integration
 
-Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations/connect-api) and create a new integration. Once created, open the integration's settings page to find your **Client ID**.
+Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations/connect-api) and create a new private integration. After creation, the integration's settings page will automatically open.
 
-Still on that settings page, in the "Authentication" tab, add the following **Redirect URL**:
+- In the **Credentials** section, click on **Generate secret** to generate a new secret.
+- Copy and paste both the **Client ID** and **Client secret** to a secure file.
+- In the **Authentication** tab, add either of the following to the **URL 1** field of the **Authorized redirects**:
+  - **Cloud or self-hosted n8n:** `https://your-n8n-instance.com/rest/oauth2-credential/callback`
+  - **Local n8n:** `http://127.0.0.1:5678/rest/oauth2-credential/callback`
 
-- **Cloud or self-hosted n8n:** `https://your-n8n-instance.com/rest/oauth2-credential/callback`
-- **Local n8n:** `http://127.0.0.1:5678/rest/oauth2-credential/callback`
-
-Then enable the following scopes:
+- In the Scopes tab, enable the following scopes:
 
 | Scope                                                                                    | Used by                                           |
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------- |
@@ -78,10 +79,10 @@ Your integration's **Scopes** settings should look like this:
 <!-- markdownlint-disable-next-line MD033 -->
 <img src="./.github/assets/app-scopes.png" alt="Your app's scopes" width="50%" />
 
-### 2. Add the credential in n8n
+### 2. Add your integration's credentials to the Canva node in n8n
 
 1. In n8n, open **Credentials → New → Canva OAuth2 API**.
-2. Enter the **Client ID** from the Canva Developer Portal.
+2. Enter the **Client ID** and **Client secret** that you saved earlier.
 3. Click **Connect my account** and complete the OAuth flow.
 
 ## Operations
@@ -211,4 +212,5 @@ The **Autofill → Create Job** operation requires a `data` object whose keys mu
 - [Ready-to-import example workflows](./examples/)
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
 - [Canva Connect API reference](https://www.canva.dev/docs/connect/api-reference/)
-- [Canva Developer Portal](https://www.canva.dev/)
+- [Canva Developer Portal](https://www.canva.com/developers)
+- [Canva Developer Documentation](https://www.canva.dev/)
