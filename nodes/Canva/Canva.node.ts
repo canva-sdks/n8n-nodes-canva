@@ -274,27 +274,22 @@ export class Canva implements INodeType {
 						if (filters.ownership) qs.ownership = filters.ownership;
 						if (filters.sort_by) qs.sort_by = filters.sort_by;
 
-						if (returnAll) {
-							const allItems: unknown[] = [];
-							let continuation: string | undefined;
-							do {
-								if (continuation) qs.continuation = continuation;
-								const resp = (await this.helpers.httpRequestWithAuthentication.call(
-									this,
-									'canvaOAuth2Api',
-									{ method: 'GET', url: `${BASE_URL}/brand-templates`, qs, json: true },
-								)) as { items?: unknown[]; continuation?: string };
-								allItems.push(...(resp.items ?? []));
-								continuation = resp.continuation;
-							} while (continuation);
-							responseData = { items: allItems };
-						} else {
-							responseData = await this.helpers.httpRequestWithAuthentication.call(
+						// Canva may return short pages (fewer than `limit` items plus a continuation
+						// token), so always paginate: until the list ends (Return All) or until
+						// enough items have been collected to honour the limit.
+						const allItems: unknown[] = [];
+						let continuation: string | undefined;
+						do {
+							if (continuation) qs.continuation = continuation;
+							const resp = (await this.helpers.httpRequestWithAuthentication.call(
 								this,
 								'canvaOAuth2Api',
 								{ method: 'GET', url: `${BASE_URL}/brand-templates`, qs, json: true },
-							);
-						}
+							)) as { items?: unknown[]; continuation?: string };
+							allItems.push(...(resp.items ?? []));
+							continuation = resp.continuation;
+						} while (continuation && (returnAll || allItems.length < limit));
+						responseData = { items: returnAll ? allItems : allItems.slice(0, limit) };
 					} else if (operation === 'publish') {
 						const designId = this.getNodeParameter('designId', i) as string;
 						responseData = await this.helpers.httpRequestWithAuthentication.call(
@@ -378,27 +373,14 @@ export class Canva implements INodeType {
 
 						const qs: IDataObject = { limit };
 
-						if (returnAll) {
-							const allItems: unknown[] = [];
-							let continuation: string | undefined;
-							do {
-								if (continuation) qs.continuation = continuation;
-								const resp = (await this.helpers.httpRequestWithAuthentication.call(
-									this,
-									'canvaOAuth2Api',
-									{
-										method: 'GET',
-										url: `${BASE_URL}/designs/${designId}/comments/${threadId}/replies`,
-										qs,
-										json: true,
-									},
-								)) as { items?: unknown[]; continuation?: string };
-								allItems.push(...(resp.items ?? []));
-								continuation = resp.continuation;
-							} while (continuation);
-							responseData = { items: allItems };
-						} else {
-							responseData = await this.helpers.httpRequestWithAuthentication.call(
+						// Canva may return short pages (fewer than `limit` items plus a continuation
+						// token), so always paginate: until the list ends (Return All) or until
+						// enough items have been collected to honour the limit.
+						const allItems: unknown[] = [];
+						let continuation: string | undefined;
+						do {
+							if (continuation) qs.continuation = continuation;
+							const resp = (await this.helpers.httpRequestWithAuthentication.call(
 								this,
 								'canvaOAuth2Api',
 								{
@@ -407,8 +389,11 @@ export class Canva implements INodeType {
 									qs,
 									json: true,
 								},
-							);
-						}
+							)) as { items?: unknown[]; continuation?: string };
+							allItems.push(...(resp.items ?? []));
+							continuation = resp.continuation;
+						} while (continuation && (returnAll || allItems.length < limit));
+						responseData = { items: returnAll ? allItems : allItems.slice(0, limit) };
 					}
 				}
 
@@ -497,27 +482,22 @@ export class Canva implements INodeType {
 						if (filters.ownership) qs.ownership = filters.ownership;
 						if (filters.sort_by) qs.sort_by = filters.sort_by;
 
-						if (returnAll) {
-							const allItems: unknown[] = [];
-							let continuation: string | undefined;
-							do {
-								if (continuation) qs.continuation = continuation;
-								const resp = (await this.helpers.httpRequestWithAuthentication.call(
-									this,
-									'canvaOAuth2Api',
-									{ method: 'GET', url: `${BASE_URL}/designs`, qs, json: true },
-								)) as { items?: unknown[]; continuation?: string };
-								allItems.push(...(resp.items ?? []));
-								continuation = resp.continuation;
-							} while (continuation);
-							responseData = { items: allItems };
-						} else {
-							responseData = await this.helpers.httpRequestWithAuthentication.call(
+						// Canva may return short pages (fewer than `limit` items plus a continuation
+						// token), so always paginate: until the list ends (Return All) or until
+						// enough items have been collected to honour the limit.
+						const allItems: unknown[] = [];
+						let continuation: string | undefined;
+						do {
+							if (continuation) qs.continuation = continuation;
+							const resp = (await this.helpers.httpRequestWithAuthentication.call(
 								this,
 								'canvaOAuth2Api',
 								{ method: 'GET', url: `${BASE_URL}/designs`, qs, json: true },
-							);
-						}
+							)) as { items?: unknown[]; continuation?: string };
+							allItems.push(...(resp.items ?? []));
+							continuation = resp.continuation;
+						} while (continuation && (returnAll || allItems.length < limit));
+						responseData = { items: returnAll ? allItems : allItems.slice(0, limit) };
 					}
 				}
 
@@ -686,27 +666,14 @@ export class Canva implements INodeType {
 							qs.item_types = (filters.item_types as string[]).join(',');
 						}
 
-						if (returnAll) {
-							const allItems: unknown[] = [];
-							let continuation: string | undefined;
-							do {
-								if (continuation) qs.continuation = continuation;
-								const resp = (await this.helpers.httpRequestWithAuthentication.call(
-									this,
-									'canvaOAuth2Api',
-									{
-										method: 'GET',
-										url: `${BASE_URL}/folders/${folderId}/items`,
-										qs,
-										json: true,
-									},
-								)) as { items?: unknown[]; continuation?: string };
-								allItems.push(...(resp.items ?? []));
-								continuation = resp.continuation;
-							} while (continuation);
-							responseData = { items: allItems };
-						} else {
-							responseData = await this.helpers.httpRequestWithAuthentication.call(
+						// Canva may return short pages (fewer than `limit` items plus a continuation
+						// token), so always paginate: until the list ends (Return All) or until
+						// enough items have been collected to honour the limit.
+						const allItems: unknown[] = [];
+						let continuation: string | undefined;
+						do {
+							if (continuation) qs.continuation = continuation;
+							const resp = (await this.helpers.httpRequestWithAuthentication.call(
 								this,
 								'canvaOAuth2Api',
 								{
@@ -715,8 +682,11 @@ export class Canva implements INodeType {
 									qs,
 									json: true,
 								},
-							);
-						}
+							)) as { items?: unknown[]; continuation?: string };
+							allItems.push(...(resp.items ?? []));
+							continuation = resp.continuation;
+						} while (continuation && (returnAll || allItems.length < limit));
+						responseData = { items: returnAll ? allItems : allItems.slice(0, limit) };
 					} else if (operation === 'moveItem') {
 						const itemId = this.getNodeParameter('itemId', i) as string;
 						const toFolderId = this.getNodeParameter('toFolderId', i) as string;
