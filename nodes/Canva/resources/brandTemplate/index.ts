@@ -2,6 +2,7 @@ import type { INodeProperties } from 'n8n-workflow';
 import { brandTemplateGetDescription } from './get';
 import { brandTemplateGetAllDescription } from './getAll';
 import { brandTemplateGetDatasetDescription } from './getDataset';
+import { brandTemplatePremiumNoticeDescription } from './premiumNotice';
 import { brandTemplatePublishDescription } from './publish';
 import { brandTemplatePublishPreviewNoticeDescription } from './publishPreviewNotice';
 
@@ -44,6 +45,7 @@ export const brandTemplateOperations: INodeProperties[] = [
 
 export const brandTemplateDescription: INodeProperties[] = [
 	...brandTemplateOperations,
+	...brandTemplatePremiumNoticeDescription,
 	...brandTemplateGetDescription,
 	...brandTemplateGetDatasetDescription,
 	...brandTemplateGetAllDescription,

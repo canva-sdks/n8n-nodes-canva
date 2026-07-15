@@ -6,6 +6,7 @@ import { designGetDatasetPreviewNoticeDescription } from './getDatasetPreviewNot
 import { designGetAllDescription } from './getAll';
 import { designGetExportFormatsDescription } from './getExportFormats';
 import { designGetPagesDescription } from './getPages';
+import { designGetPagesPreviewNoticeDescription } from './getPagesPreviewNotice';
 
 export const designOperations: INodeProperties[] = [
 	{
@@ -63,6 +64,7 @@ export const designDescription: INodeProperties[] = [
 	...designGetDatasetPreviewNoticeDescription,
 	...designGetDatasetDescription,
 	...designGetExportFormatsDescription,
+	...designGetPagesPreviewNoticeDescription,
 	...designGetPagesDescription,
 	...designGetAllDescription,
 ];

@@ -3,6 +3,7 @@ import { assetDeleteDescription } from './delete';
 import { assetGetDescription } from './get';
 import { assetUpdateDescription } from './update';
 import { assetUploadDescription } from './upload';
+import { assetUploadPreviewNoticeDescription } from './uploadPreviewNotice';
 
 export const assetOperations: INodeProperties[] = [
 	{
@@ -46,5 +47,6 @@ export const assetDescription: INodeProperties[] = [
 	...assetDeleteDescription,
 	...assetGetDescription,
 	...assetUpdateDescription,
+	...assetUploadPreviewNoticeDescription,
 	...assetUploadDescription,
 ];
