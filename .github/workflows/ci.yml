@@ -8,7 +8,7 @@ on:
 
 # Cancel in-progress runs for the same branch/PR to avoid wasting CI minutes.
 concurrency:
-  group: ci-$
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
