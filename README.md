@@ -47,8 +47,6 @@ sudo chown -R $(id -u):$(id -g) ~/.npm
 npm run dev
 ```
 
-`npm run dev` checks for this automatically before starting and will print the fix if your cache is affected. To avoid the problem recurring, never run npm with `sudo` — use a Node version manager (nvm, fnm, Volta, etc.) so global installs don't need elevated permissions.
-
 ## Credentials
 
 This node uses **OAuth2 with PKCE** to authenticate with Canva.
