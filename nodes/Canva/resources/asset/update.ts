@@ -24,7 +24,7 @@ export const assetUpdateDescription: INodeProperties[] = [
 				name: 'name',
 				type: 'string',
 				default: '',
-				description: 'New name for the asset (max 255 characters)',
+				description: 'New name for the asset (max 50 characters)',
 				placeholder: 'My Updated Asset',
 			},
 			{
@@ -32,7 +32,7 @@ export const assetUpdateDescription: INodeProperties[] = [
 				name: 'tags',
 				type: 'string',
 				default: '',
-				description: 'Comma-separated list of tags to assign to the asset',
+				description: 'Comma-separated list of tags to assign to the asset (max 50 tags)',
 				placeholder: 'logo,brand,2024',
 			},
 		],
