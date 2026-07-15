@@ -466,12 +466,15 @@ export class Canva implements INodeType {
 						);
 					} else if (operation === 'getPages') {
 						const designId = this.getNodeParameter('designId', i) as string;
+						const offset = this.getNodeParameter('offset', i) as number;
+						const limit = this.getNodeParameter('limit', i) as number;
 						responseData = await this.helpers.httpRequestWithAuthentication.call(
 							this,
 							'canvaOAuth2Api',
 							{
 								method: 'GET',
 								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/pages`,
+								qs: { offset, limit },
 								json: true,
 							},
 						);
