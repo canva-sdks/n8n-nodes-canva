@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"description": "Canva API integration for n8n. Create, edit, and export designs, folders, and more.",
 	"license": "MIT",
-	"homepage": "",
+	"homepage": "https://github.com/canva-sdks/n8n-nodes-canva#readme",
 	"keywords": [
 		"n8n-community-node-package",
 		"canva",
