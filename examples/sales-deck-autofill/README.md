@@ -11,19 +11,19 @@ Google Sheets (new row) → Canva Autofill → Canva Export (PPTX) → Slack
 ## Prerequisites
 
 - A Canva **Enterprise** account (Data Autofill requires it) and a [Canva OAuth2 credential](../../README.md#credentials) with `brandtemplate:*`, `design:content:*` and `asset:read` scopes enabled.
-- A **brand template with a dataset**. This example expects four text fields — rename them in the *Create deck from brand template* node if yours differ:
+- A **brand template with a dataset**. This example expects four text fields — rename them in the _Create deck from brand template_ node if yours differ:
   - `client_name`, `headline`, `key_points`, `prepared_by`
-  - Tip: to build one, create a deck, tag the text elements as data fields (or ask Claude with the Canva connector to do it), and publish via *Share → Publish as brand template*. Autofill replaces each tagged element's **entire** text, so include any static prefix (e.g. "Prepared by …") in the workflow data, not the template.
+  - Tip: to build one, create a deck, tag the text elements as data fields (or ask Claude with the Canva connector to do it), and publish via _Share → Publish as brand template_. Autofill replaces each tagged element's **entire** text, so include any static prefix (e.g. "Prepared by …") in the workflow data, not the template.
 - A Google Sheet with matching column headers: `client_name`, `headline`, `key_points`, `prepared_by`.
 - Google Sheets and Slack credentials in n8n.
 
 ## Setup
 
-1. Import `workflow.json` into n8n (*Workflows → Import from file*).
+1. Import `workflow.json` into n8n (_Workflows → Import from file_).
 2. Open each node and select your credentials.
 3. In the trigger, point to your spreadsheet and sheet.
-4. In *Create deck from brand template*, set your brand template ID (from the template's URL: `canva.com/brand/templates/{ID}`) and check the field mapping. Use the **Brand Template → Get Dataset** operation to inspect a template's field names.
-5. In *Notify the rep in Slack*, pick your channel.
+4. In _Create deck from brand template_, set your brand template ID (from the template's URL: `canva.com/brand/templates/{ID}`) and check the field mapping. Use the **Brand Template → Get Dataset** operation to inspect a template's field names.
+5. In _Notify the rep in Slack_, pick your channel.
 6. Activate the workflow and add a row to the sheet.
 
 ## Notes

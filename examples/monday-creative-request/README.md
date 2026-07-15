@@ -13,22 +13,22 @@ Monday webhook (item created) → Get item → Extract fields
 ## Prerequisites
 
 - A Canva **Enterprise** account (Data Autofill requires it) and a [Canva OAuth2 credential](../../README.md#credentials) with `brandtemplate:*`, `design:content:*` and `asset:*` scopes enabled.
-- A **brand template with a dataset**. This example expects `headline` and `subheadline` (text) and optionally `hero_image` (image) — rename them in the *Create design from brand template* node if yours differ.
+- A **brand template with a dataset**. This example expects `headline` and `subheadline` (text) and optionally `hero_image` (image) — rename them in the _Create design from brand template_ node if yours differ.
 - A Monday.com board with text columns for headline/subheadline, an optional Link column for a public image URL, and a Status column.
 - A Monday.com credential in n8n (API token).
 
 ## Setup
 
 1. Import `workflow.json` into n8n and select your credentials on each Monday and Canva node.
-2. In *Create design from brand template*, set your brand template ID.
-3. In *Extract request fields*, update the `COLUMNS` map with your board's column IDs.
-4. Activate the workflow, then copy the **production** webhook URL from the *Monday webhook* node.
-5. In Monday: board → *Integrate* → *Webhooks* → *When an item is created, send a webhook* → paste the URL. The workflow answers Monday's `challenge` handshake automatically (that's what the *Respond to Monday* node does).
+2. In _Create design from brand template_, set your brand template ID.
+3. In _Extract request fields_, update the `COLUMNS` map with your board's column IDs.
+4. Activate the workflow, then copy the **production** webhook URL from the _Monday webhook_ node.
+5. In Monday: board → _Integrate_ → _Webhooks_ → _When an item is created, send a webhook_ → paste the URL. The workflow answers Monday's `challenge` handshake automatically (that's what the _Respond to Monday_ node does).
 6. Create an item on the board to test.
 
 ## Notes
 
 - The image URL must be **publicly accessible** — Canva fetches it server-side. Files attached to Monday items are behind auth, which is why this example uses a Link column instead of a Files column.
-- *Set request status* assumes a status column with ID `status` and a `Done` label — adjust to your board.
+- _Set request status_ assumes a status column with ID `status` and a `Done` label — adjust to your board.
 - Export download URLs **expire after 24 hours**; the update also includes a permanent Canva edit link.
-- Swap the PNG export for `pdf`, `pptx` or `mp4` (video templates) in *Export design as PNG*.
+- Swap the PNG export for `pdf`, `pptx` or `mp4` (video templates) in _Export design as PNG_.

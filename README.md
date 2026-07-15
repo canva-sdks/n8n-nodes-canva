@@ -87,27 +87,31 @@ Your integration's **Scopes** settings should look like this:
 
 ### Asset
 
-| Operation | Description                    |
-| --------- | ------------------------------ |
-| Delete    | Delete an asset                |
-| Get       | Get metadata for an asset      |
-| Update    | Update an asset's name or tags |
-| Upload    | Upload an asset from a URL     |
+| Operation                   | Description                                                       |
+| --------------------------- | ----------------------------------------------------------------- |
+| Delete                      | Delete an asset                                                   |
+| Get                         | Get metadata for an asset                                         |
+| Update                      | Update an asset's name or tags                                    |
+| Upload From URL _(Preview)_ | Upload an asset from a public URL and wait for completion (async) |
 
 ### Autofill
 
-| Operation  | Description                                                                   |
-| ---------- | ----------------------------------------------------------------------------- |
-| Create Job | Populate a brand template with data and wait for the resulting design (async) |
+> 💎 The Autofill API can only be used on behalf of users who are members of a Canva Enterprise organization.
+
+| Operation | Description                                                                   |
+| --------- | ----------------------------------------------------------------------------- |
+| Create    | Populate a brand template with data and wait for the resulting design (async) |
 
 ### Brand Template
 
-| Operation           | Description                                   |
-| ------------------- | --------------------------------------------- |
-| Get                 | Get metadata for a brand template             |
-| Get Dataset         | Get the autofill dataset for a brand template |
+> 💎 The Brand Template APIs require a Canva plan with premium features (such as Canva Pro).
+
+| Operation           | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| Get                 | Get metadata for a brand template               |
+| Get Dataset         | Get the autofill dataset for a brand template   |
 | Get Many            | Get many brand templates accessible to the user |
-| Publish _(Preview)_ | Publish a design as a brand template          |
+| Publish _(Preview)_ | Publish a design as a brand template            |
 
 ### Comment _(Preview API)_
 
@@ -130,19 +134,19 @@ Your integration's **Scopes** settings should look like this:
 | Get Dataset _(Preview)_ | Get the autofill dataset for a design         |
 | Get Export Formats      | Get the available export formats for a design |
 | Get Many                | Get many designs from the user's projects     |
-| Get Pages               | Get metadata for pages in a design            |
+| Get Pages _(Preview)_   | Get metadata for pages in a design            |
 
 ### Design Import
 
-| Operation         | Description                                                                                    |
-| ----------------- | ---------------------------------------------------------------------------------------------- |
-| Create Import Job | Import an external file (e.g. PPTX, PDF) into Canva from a URL and wait for completion (async) |
+| Operation       | Description                                                                                    |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| Import From URL | Import an external file (e.g. PPTX, PDF) into Canva from a URL and wait for completion (async) |
 
 ### Export
 
-| Operation  | Description                                                            |
-| ---------- | ---------------------------------------------------------------------- |
-| Create Job | Export a design to a file format and wait for the download URL (async) |
+| Operation     | Description                                                            |
+| ------------- | ---------------------------------------------------------------------- |
+| Export Design | Export a design to a file format and wait for the download URL (async) |
 
 ### Folder
 
@@ -183,12 +187,12 @@ Your integration's **Scopes** settings should look like this:
 
 ### Async operations
 
-Several operations — **Autofill**, **Design Import**, **Export**, **Merge**, and **Resize** — create background jobs in Canva. This node automatically polls for completion and returns the final result once the job succeeds.
+Several operations — **Asset Upload From URL**, **Autofill**, **Design Import**, **Export**, **Merge**, and **Resize** — create background jobs in Canva. This node automatically polls for completion and returns the final result once the job succeeds.
 
 You can tune polling behaviour with two optional parameters available on each async operation:
 
-- **Poll Interval** (default 3 s) — how often to check for job completion
-- **Max Wait** (default 120 s) — maximum time to wait before throwing a timeout error
+- **Poll Interval** (default 2–3 s depending on the operation) — how often to check for job completion
+- **Max Wait** (default 60 s, or 120 s for Design Import) — maximum time to wait before throwing a timeout error
 
 If a job fails, the node throws an error with the Canva error details.
 
@@ -202,7 +206,7 @@ The **Folder → Move Item** operation accepts any item ID (design, asset, or fo
 
 ### Autofill dataset format
 
-The **Autofill → Create Job** operation requires a `data` object whose keys must match the dataset fields returned by **Brand Template → Get Dataset**. Use the Get Dataset operation first to discover the correct field names.
+The **Autofill → Create** operation requires a `data` object whose keys must match the dataset fields returned by **Brand Template → Get Dataset**. Use the Get Dataset operation first to discover the correct field names.
 
 ## Resources
 
