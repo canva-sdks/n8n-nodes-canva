@@ -43,6 +43,7 @@ export const folderListItemsDescription: INodeProperties[] = [
 				name: 'item_types',
 				type: 'multiOptions',
 				options: [
+					{ name: 'Brand Template', value: 'brand_template' },
 					{ name: 'Design', value: 'design' },
 					{ name: 'Folder', value: 'folder' },
 					{ name: 'Image', value: 'image' },
