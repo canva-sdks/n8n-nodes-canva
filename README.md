@@ -63,7 +63,7 @@ Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations
   - **Cloud or self-hosted n8n:** `https://your-n8n-instance.com/rest/oauth2-credential/callback`
   - **Local n8n:** `http://127.0.0.1:5678/rest/oauth2-credential/callback`
 
-- In the Scopes tab, enable the following scopes:
+- In the **Scopes** tab, enable the following scopes:
 
 | Scope                                                                                    | Used by                                           |
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------- |
