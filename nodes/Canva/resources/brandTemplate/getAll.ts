@@ -29,6 +29,18 @@ export const brandTemplateGetAllDescription: INodeProperties[] = [
 		displayOptions: { show: { resource: ['brandTemplate'], operation: ['getAll'] } },
 		options: [
 			{
+				displayName: 'Ownership',
+				name: 'ownership',
+				type: 'options',
+				options: [
+					{ name: 'Any', value: 'any', description: 'Owned by and shared with the user' },
+					{ name: 'Owned', value: 'owned', description: 'Owned by the user' },
+					{ name: 'Shared', value: 'shared', description: 'Shared with the user' },
+				],
+				default: 'any',
+				description: 'Filter templates by ownership',
+			},
+			{
 				displayName: 'Search Query',
 				name: 'query',
 				type: 'string',
@@ -49,18 +61,6 @@ export const brandTemplateGetAllDescription: INodeProperties[] = [
 				],
 				default: 'relevance',
 				description: 'Sort order for the results',
-			},
-			{
-				displayName: 'Ownership',
-				name: 'ownership',
-				type: 'options',
-				options: [
-					{ name: 'Any', value: 'any', description: 'Owned by and shared with the user' },
-					{ name: 'Owned', value: 'owned', description: 'Owned by the user' },
-					{ name: 'Shared', value: 'shared', description: 'Shared with the user' },
-				],
-				default: 'any',
-				description: 'Filter templates by ownership',
 			},
 		],
 	},

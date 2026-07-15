@@ -29,14 +29,6 @@ export const designGetAllDescription: INodeProperties[] = [
 		displayOptions: { show: { resource: ['design'], operation: ['getAll'] } },
 		options: [
 			{
-				displayName: 'Search Query',
-				name: 'query',
-				type: 'string',
-				default: '',
-				description: 'Search term to filter designs by name',
-				placeholder: 'party invites',
-			},
-			{
 				displayName: 'Ownership',
 				name: 'ownership',
 				type: 'options',
@@ -47,6 +39,14 @@ export const designGetAllDescription: INodeProperties[] = [
 				],
 				default: 'any',
 				description: 'Filter designs by ownership',
+			},
+			{
+				displayName: 'Search Query',
+				name: 'query',
+				type: 'string',
+				default: '',
+				description: 'Search term to filter designs by name',
+				placeholder: 'party invites',
 			},
 			{
 				displayName: 'Sort By',
