@@ -91,7 +91,6 @@ Your integration's **Scopes** settings should look like this:
 | --------- | ------------------------------ |
 | Delete    | Delete an asset                |
 | Get       | Get metadata for an asset      |
-| List      | List assets in a folder        |
 | Update    | Update an asset's name or tags |
 | Upload    | Upload an asset from a URL     |
 
