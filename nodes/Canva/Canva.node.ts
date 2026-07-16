@@ -23,7 +23,7 @@ import { resizeDescription } from './resources/resize';
 import { assetDescription } from './resources/asset';
 import { userDescription } from './resources/user';
 
-const BASE_URL = 'https://api.canva.com/rest/v1';
+import { canvaApiRequest } from './GenericFunctions';
 
 export class Canva implements INodeType {
 	description: INodeTypeDescription = {
@@ -89,23 +89,19 @@ export class Canva implements INodeType {
 				if (resource === 'asset') {
 					if (operation === 'delete') {
 						const assetId = this.getNodeParameter('assetId', i) as string;
-						await this.helpers.httpRequestWithAuthentication.call(this, 'canvaOAuth2Api', {
+						await canvaApiRequest(this, {
 							method: 'DELETE',
-							url: `${BASE_URL}/assets/${encodeURIComponent(assetId)}`,
+							url: `/assets/${encodeURIComponent(assetId)}`,
 							json: true,
 						});
 						responseData = { success: true };
 					} else if (operation === 'get') {
 						const assetId = this.getNodeParameter('assetId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'GET',
-								url: `${BASE_URL}/assets/${encodeURIComponent(assetId)}`,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/assets/${encodeURIComponent(assetId)}`,
+							json: true,
+						});
 					} else if (operation === 'update') {
 						const assetId = this.getNodeParameter('assetId', i) as string;
 						const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
@@ -119,16 +115,12 @@ export class Canva implements INodeType {
 								.filter(Boolean);
 						}
 
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'PATCH',
-								url: `${BASE_URL}/assets/${encodeURIComponent(assetId)}`,
-								body,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'PATCH',
+							url: `/assets/${encodeURIComponent(assetId)}`,
+							body,
+							json: true,
+						});
 					} else if (operation === 'upload') {
 						const name = this.getNodeParameter('name', i) as string;
 						const url = this.getNodeParameter('url', i) as string;
@@ -136,16 +128,12 @@ export class Canva implements INodeType {
 						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
 
 						// 1. Create upload job
-						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/url-asset-uploads`,
-								body: { name, url },
-								json: true,
-							},
-						)) as { job: { id: string; status: string } };
+						const createResp = (await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/url-asset-uploads`,
+							body: { name, url },
+							json: true,
+						})) as { job: { id: string; status: string } };
 
 						const uploadJobId = createResp.job.id;
 
@@ -162,15 +150,11 @@ export class Canva implements INodeType {
 								);
 							}
 							await sleep(pollInterval);
-							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
-								this,
-								'canvaOAuth2Api',
-								{
-									method: 'GET',
-									url: `${BASE_URL}/url-asset-uploads/${uploadJobId}`,
-									json: true,
-								},
-							)) as { job: { id: string; status: string } };
+							jobResp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/url-asset-uploads/${uploadJobId}`,
+								json: true,
+							})) as { job: { id: string; status: string } };
 						}
 
 						if (jobResp.job.status === 'failed') {
@@ -207,16 +191,12 @@ export class Canva implements INodeType {
 						if (title) body.title = title;
 
 						// 1. Create autofill job
-						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/autofills`,
-								body,
-								json: true,
-							},
-						)) as { job: { id: string; status: string } };
+						const createResp = (await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/autofills`,
+							body,
+							json: true,
+						})) as { job: { id: string; status: string } };
 
 						const autofillJobId = createResp.job.id;
 
@@ -233,15 +213,11 @@ export class Canva implements INodeType {
 								);
 							}
 							await sleep(pollInterval);
-							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
-								this,
-								'canvaOAuth2Api',
-								{
-									method: 'GET',
-									url: `${BASE_URL}/autofills/${autofillJobId}`,
-									json: true,
-								},
-							)) as { job: { id: string; status: string } };
+							jobResp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/autofills/${autofillJobId}`,
+								json: true,
+							})) as { job: { id: string; status: string } };
 						}
 
 						if (jobResp.job.status === 'failed') {
@@ -258,26 +234,18 @@ export class Canva implements INodeType {
 				else if (resource === 'brandTemplate') {
 					if (operation === 'get') {
 						const brandTemplateId = this.getNodeParameter('brandTemplateId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'GET',
-								url: `${BASE_URL}/brand-templates/${encodeURIComponent(brandTemplateId)}`,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/brand-templates/${encodeURIComponent(brandTemplateId)}`,
+							json: true,
+						});
 					} else if (operation === 'getDataset') {
 						const brandTemplateId = this.getNodeParameter('brandTemplateId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'GET',
-								url: `${BASE_URL}/brand-templates/${encodeURIComponent(brandTemplateId)}/dataset`,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/brand-templates/${encodeURIComponent(brandTemplateId)}/dataset`,
+							json: true,
+						});
 					} else if (operation === 'getAll') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const limit = returnAll ? 100 : (this.getNodeParameter('limit', i) as number);
@@ -295,27 +263,24 @@ export class Canva implements INodeType {
 						let continuation: string | undefined;
 						do {
 							if (continuation) qs.continuation = continuation;
-							const resp = (await this.helpers.httpRequestWithAuthentication.call(
-								this,
-								'canvaOAuth2Api',
-								{ method: 'GET', url: `${BASE_URL}/brand-templates`, qs, json: true },
-							)) as { items?: unknown[]; continuation?: string };
+							const resp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/brand-templates`,
+								qs,
+								json: true,
+							})) as { items?: unknown[]; continuation?: string };
 							allItems.push(...(resp.items ?? []));
 							continuation = resp.continuation;
 						} while (continuation && (returnAll || allItems.length < limit));
 						responseData = returnAll ? allItems : allItems.slice(0, limit);
 					} else if (operation === 'publish') {
 						const designId = this.getNodeParameter('designId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/brand-templates`,
-								body: { design_id: designId },
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/brand-templates`,
+							body: { design_id: designId },
+							json: true,
+						});
 					}
 				}
 
@@ -329,56 +294,40 @@ export class Canva implements INodeType {
 						const body: IDataObject = { message_plaintext: message };
 						if (additionalFields.assignee_id) body.assignee_id = additionalFields.assignee_id;
 
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/comments`,
-								body,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/designs/${encodeURIComponent(designId)}/comments`,
+							body,
+							json: true,
+						});
 					} else if (operation === 'createReply') {
 						const designId = this.getNodeParameter('designId', i) as string;
 						const threadId = this.getNodeParameter('threadId', i) as string;
 						const message = this.getNodeParameter('message', i) as string;
 
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}/replies`,
-								body: { message_plaintext: message },
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}/replies`,
+							body: { message_plaintext: message },
+							json: true,
+						});
 					} else if (operation === 'getThread') {
 						const designId = this.getNodeParameter('designId', i) as string;
 						const threadId = this.getNodeParameter('threadId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'GET',
-								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}`,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}`,
+							json: true,
+						});
 					} else if (operation === 'getReply') {
 						const designId = this.getNodeParameter('designId', i) as string;
 						const threadId = this.getNodeParameter('threadId', i) as string;
 						const replyId = this.getNodeParameter('replyId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'GET',
-								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}/replies/${encodeURIComponent(replyId)}`,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}/replies/${encodeURIComponent(replyId)}`,
+							json: true,
+						});
 					} else if (operation === 'listReplies') {
 						const designId = this.getNodeParameter('designId', i) as string;
 						const threadId = this.getNodeParameter('threadId', i) as string;
@@ -394,16 +343,12 @@ export class Canva implements INodeType {
 						let continuation: string | undefined;
 						do {
 							if (continuation) qs.continuation = continuation;
-							const resp = (await this.helpers.httpRequestWithAuthentication.call(
-								this,
-								'canvaOAuth2Api',
-								{
-									method: 'GET',
-									url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}/replies`,
-									qs,
-									json: true,
-								},
-							)) as { items?: unknown[]; continuation?: string };
+							const resp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/designs/${encodeURIComponent(designId)}/comments/${encodeURIComponent(threadId)}/replies`,
+								qs,
+								json: true,
+							})) as { items?: unknown[]; continuation?: string };
 							allItems.push(...(resp.items ?? []));
 							continuation = resp.continuation;
 						} while (continuation && (returnAll || allItems.length < limit));
@@ -432,63 +377,43 @@ export class Canva implements INodeType {
 						if (title) body.title = title;
 						if (assetId) body.asset_id = assetId;
 
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/designs`,
-								body,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/designs`,
+							body,
+							json: true,
+						});
 					} else if (operation === 'get') {
 						const designId = this.getNodeParameter('designId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'GET',
-								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}`,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/designs/${encodeURIComponent(designId)}`,
+							json: true,
+						});
 					} else if (operation === 'getDataset') {
 						const designId = this.getNodeParameter('designId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'GET',
-								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/dataset`,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/designs/${encodeURIComponent(designId)}/dataset`,
+							json: true,
+						});
 					} else if (operation === 'getPages') {
 						const designId = this.getNodeParameter('designId', i) as string;
 						const offset = this.getNodeParameter('offset', i) as number;
 						const limit = this.getNodeParameter('limit', i) as number;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'GET',
-								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/pages`,
-								qs: { offset, limit },
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/designs/${encodeURIComponent(designId)}/pages`,
+							qs: { offset, limit },
+							json: true,
+						});
 					} else if (operation === 'getExportFormats') {
 						const designId = this.getNodeParameter('designId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'GET',
-								url: `${BASE_URL}/designs/${encodeURIComponent(designId)}/export-formats`,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/designs/${encodeURIComponent(designId)}/export-formats`,
+							json: true,
+						});
 					} else if (operation === 'getAll') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const limit = returnAll ? 100 : (this.getNodeParameter('limit', i) as number);
@@ -506,11 +431,12 @@ export class Canva implements INodeType {
 						let continuation: string | undefined;
 						do {
 							if (continuation) qs.continuation = continuation;
-							const resp = (await this.helpers.httpRequestWithAuthentication.call(
-								this,
-								'canvaOAuth2Api',
-								{ method: 'GET', url: `${BASE_URL}/designs`, qs, json: true },
-							)) as { items?: unknown[]; continuation?: string };
+							const resp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/designs`,
+								qs,
+								json: true,
+							})) as { items?: unknown[]; continuation?: string };
 							allItems.push(...(resp.items ?? []));
 							continuation = resp.continuation;
 						} while (continuation && (returnAll || allItems.length < limit));
@@ -527,16 +453,12 @@ export class Canva implements INodeType {
 						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
 
 						// 1. Create URL import job
-						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/url-imports`,
-								body: { url, title },
-								json: true,
-							},
-						)) as { job: { id: string; status: string } };
+						const createResp = (await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/url-imports`,
+							body: { url, title },
+							json: true,
+						})) as { job: { id: string; status: string } };
 
 						const importJobId = createResp.job.id;
 
@@ -553,15 +475,11 @@ export class Canva implements INodeType {
 								);
 							}
 							await sleep(pollInterval);
-							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
-								this,
-								'canvaOAuth2Api',
-								{
-									method: 'GET',
-									url: `${BASE_URL}/url-imports/${importJobId}`,
-									json: true,
-								},
-							)) as { job: { id: string; status: string } };
+							jobResp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/url-imports/${importJobId}`,
+								json: true,
+							})) as { job: { id: string; status: string } };
 						}
 
 						if (jobResp.job.status === 'failed') {
@@ -599,16 +517,12 @@ export class Canva implements INodeType {
 						}
 
 						// 1. Create export job
-						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/exports`,
-								body: { design_id: designId, format: exportFormat },
-								json: true,
-							},
-						)) as { job: { id: string; status: string } };
+						const createResp = (await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/exports`,
+							body: { design_id: designId, format: exportFormat },
+							json: true,
+						})) as { job: { id: string; status: string } };
 
 						const exportId = createResp.job.id;
 
@@ -625,15 +539,11 @@ export class Canva implements INodeType {
 								);
 							}
 							await sleep(pollInterval);
-							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
-								this,
-								'canvaOAuth2Api',
-								{
-									method: 'GET',
-									url: `${BASE_URL}/exports/${exportId}`,
-									json: true,
-								},
-							)) as { job: { id: string; status: string } };
+							jobResp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/exports/${exportId}`,
+								json: true,
+							})) as { job: { id: string; status: string } };
 						}
 
 						if (jobResp.job.status === 'failed') {
@@ -651,35 +561,27 @@ export class Canva implements INodeType {
 					if (operation === 'create') {
 						const name = this.getNodeParameter('name', i) as string;
 						const parentFolderId = this.getNodeParameter('parentFolderId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/folders`,
-								body: { name, parent_folder_id: parentFolderId },
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/folders`,
+							body: { name, parent_folder_id: parentFolderId },
+							json: true,
+						});
 					} else if (operation === 'delete') {
 						const folderId = this.getNodeParameter('folderId', i) as string;
-						await this.helpers.httpRequestWithAuthentication.call(this, 'canvaOAuth2Api', {
+						await canvaApiRequest(this, {
 							method: 'DELETE',
-							url: `${BASE_URL}/folders/${encodeURIComponent(folderId)}`,
+							url: `/folders/${encodeURIComponent(folderId)}`,
 							json: true,
 						});
 						responseData = { success: true };
 					} else if (operation === 'get') {
 						const folderId = this.getNodeParameter('folderId', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'GET',
-								url: `${BASE_URL}/folders/${encodeURIComponent(folderId)}`,
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/folders/${encodeURIComponent(folderId)}`,
+							json: true,
+						});
 					} else if (operation === 'listItems') {
 						const folderId = this.getNodeParameter('folderId', i) as string;
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
@@ -699,16 +601,12 @@ export class Canva implements INodeType {
 						let continuation: string | undefined;
 						do {
 							if (continuation) qs.continuation = continuation;
-							const resp = (await this.helpers.httpRequestWithAuthentication.call(
-								this,
-								'canvaOAuth2Api',
-								{
-									method: 'GET',
-									url: `${BASE_URL}/folders/${encodeURIComponent(folderId)}/items`,
-									qs,
-									json: true,
-								},
-							)) as { items?: unknown[]; continuation?: string };
+							const resp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/folders/${encodeURIComponent(folderId)}/items`,
+								qs,
+								json: true,
+							})) as { items?: unknown[]; continuation?: string };
 							allItems.push(...(resp.items ?? []));
 							continuation = resp.continuation;
 						} while (continuation && (returnAll || allItems.length < limit));
@@ -716,9 +614,9 @@ export class Canva implements INodeType {
 					} else if (operation === 'moveItem') {
 						const itemId = this.getNodeParameter('itemId', i) as string;
 						const toFolderId = this.getNodeParameter('toFolderId', i) as string;
-						await this.helpers.httpRequestWithAuthentication.call(this, 'canvaOAuth2Api', {
+						await canvaApiRequest(this, {
 							method: 'POST',
-							url: `${BASE_URL}/folders/move`,
+							url: `/folders/move`,
 							body: {
 								item_id: itemId,
 								to_folder_id: toFolderId,
@@ -729,16 +627,12 @@ export class Canva implements INodeType {
 					} else if (operation === 'update') {
 						const folderId = this.getNodeParameter('folderId', i) as string;
 						const name = this.getNodeParameter('name', i) as string;
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'PATCH',
-								url: `${BASE_URL}/folders/${encodeURIComponent(folderId)}`,
-								body: { name },
-								json: true,
-							},
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'PATCH',
+							url: `/folders/${encodeURIComponent(folderId)}`,
+							body: { name },
+							json: true,
+						});
 					}
 				}
 
@@ -777,16 +671,12 @@ export class Canva implements INodeType {
 						}
 
 						// 1. Create merge job
-						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/merges`,
-								body,
-								json: true,
-							},
-						)) as { job: { id: string; status: string } };
+						const createResp = (await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/merges`,
+							body,
+							json: true,
+						})) as { job: { id: string; status: string } };
 
 						const mergeJobId = createResp.job.id;
 
@@ -803,15 +693,11 @@ export class Canva implements INodeType {
 								);
 							}
 							await sleep(pollInterval);
-							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
-								this,
-								'canvaOAuth2Api',
-								{
-									method: 'GET',
-									url: `${BASE_URL}/merges/${mergeJobId}`,
-									json: true,
-								},
-							)) as { job: { id: string; status: string } };
+							jobResp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/merges/${mergeJobId}`,
+								json: true,
+							})) as { job: { id: string; status: string } };
 						}
 
 						if (jobResp.job.status === 'failed') {
@@ -843,16 +729,12 @@ export class Canva implements INodeType {
 						}
 
 						// 1. Create resize job
-						const createResp = (await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{
-								method: 'POST',
-								url: `${BASE_URL}/resizes`,
-								body: { design_id: designId, design_type },
-								json: true,
-							},
-						)) as { job: { id: string; status: string } };
+						const createResp = (await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/resizes`,
+							body: { design_id: designId, design_type },
+							json: true,
+						})) as { job: { id: string; status: string } };
 
 						const resizeJobId = createResp.job.id;
 
@@ -869,15 +751,11 @@ export class Canva implements INodeType {
 								);
 							}
 							await sleep(pollInterval);
-							jobResp = (await this.helpers.httpRequestWithAuthentication.call(
-								this,
-								'canvaOAuth2Api',
-								{
-									method: 'GET',
-									url: `${BASE_URL}/resizes/${resizeJobId}`,
-									json: true,
-								},
-							)) as { job: { id: string; status: string } };
+							jobResp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/resizes/${resizeJobId}`,
+								json: true,
+							})) as { job: { id: string; status: string } };
 						}
 
 						if (jobResp.job.status === 'failed') {
@@ -893,23 +771,23 @@ export class Canva implements INodeType {
 				// ─── User ──────────────────────────────────────────────────────────
 				else if (resource === 'user') {
 					if (operation === 'getCapabilities') {
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{ method: 'GET', url: `${BASE_URL}/users/me/capabilities`, json: true },
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/users/me/capabilities`,
+							json: true,
+						});
 					} else if (operation === 'getMe') {
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{ method: 'GET', url: `${BASE_URL}/users/me`, json: true },
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/users/me`,
+							json: true,
+						});
 					} else if (operation === 'getProfile') {
-						responseData = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'canvaOAuth2Api',
-							{ method: 'GET', url: `${BASE_URL}/users/me/profile`, json: true },
-						);
+						responseData = await canvaApiRequest(this, {
+							method: 'GET',
+							url: `/users/me/profile`,
+							json: true,
+						});
 					}
 				}
 
