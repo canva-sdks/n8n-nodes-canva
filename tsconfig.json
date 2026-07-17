@@ -15,7 +15,7 @@
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
 		"incremental": true,
-		"declaration": true,
+		"declaration": false,
 		"sourceMap": true,
 		"skipLibCheck": true,
 		"outDir": "./dist/"
