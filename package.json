@@ -32,7 +32,8 @@
 		"dist"
 	],
 	"publishConfig": {
-		"access": "public"
+		"access": "public",
+		"tag": "beta"
 	},
 	"n8n": {
 		"n8nNodesApiVersion": 1,
