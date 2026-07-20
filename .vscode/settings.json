@@ -1,4 +1,8 @@
 {
 	"editor.formatOnSave": true,
-	"cSpell.words": ["brandtemplate", "pkce"]
+	"cSpell.words": [
+		"autofills",
+		"brandtemplate",
+		"pkce"
+	]
 }
