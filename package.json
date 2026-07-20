@@ -1,6 +1,6 @@
 {
 	"name": "@canva/n8n-nodes-canva",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Canva API integration for n8n. Create, edit, and export designs, folders, and more.",
 	"license": "MIT",
 	"homepage": "https://github.com/canva-sdks/n8n-nodes-canva#readme",
