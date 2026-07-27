@@ -57,8 +57,9 @@ Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations
 
 - In the **Credentials** section, click on **Generate secret** to generate a new secret.
 - Copy and paste both the **Client ID** and **Client secret** to a secure file.
-- In the **Authentication** tab, add either of the following to the **URL 1** field of the **Authorized redirects**:
-  - **Cloud or self-hosted n8n:** `https://your-n8n-instance.com/rest/oauth2-credential/callback`
+- In the **Authentication** tab, add the **OAuth Redirect URL** shown in the n8n credential dialog to the **URL 1** field of the **Authorized redirects**:
+  - **n8n Cloud:** `https://oauth.n8n.cloud/oauth2/callback`
+  - **Self-hosted n8n:** `https://your-n8n-instance.com/rest/oauth2-credential/callback`
   - **Local n8n:** `http://127.0.0.1:5678/rest/oauth2-credential/callback`
 
 - In the **Scopes** tab, enable the following scopes:
