@@ -1,0 +1,706 @@
+{
+	"name": "Generate real estate listing flyers from Google Sheets and Google Drive with Canva",
+	"nodes": [
+		{
+			"parameters": {
+				"content": "# 🏠 Generate real estate listing flyers from Google Sheets and Google Drive with Canva\n\n**Who's it for**\nReal estate agencies and marketing teams on Canva Enterprise that produce listing flyers at scale. (Note that it can also be extended to users outside of this industry!)\n\n**How it works**\n\n1. An agent fills in a row in a Google Sheet (listing ID, address, price, beds/baths, agent details) and sets `ready` to *`YES`*.\n2. The workflow finds the listing photo in a Google Drive folder — the file name starts with the listing ID (e.g. `RE-1024.jpg`).\n3. The photo is uploaded to Canva as an asset.\n4. Data Autofill fills your brand template and the design link is written back to the sheet.\n\n**Setup**\n\n- [ ] Create a Google Sheet with columns: `ready`, `listing_id`, `address`, `price`, `beds`, `baths`, `agent_name`, `agent_phone`, `design_url`, `status`.\n- [ ] Share a Drive photo folder as “Anyone with the link → Viewer” (Canva downloads the image by URL).\n- [ ] In Canva, create a brand template with a dataset: `property_photo` (image) and `address`, `price`, `beds_baths`, `agent_name`, `agent_phone` (text).\n- [ ] Enter your brand template ID and Drive folder ID in **Workflow configuration**.\n- [ ] Connect your Google and Canva credentials.\n\n**Requirements**\n- Canva Enterprise account (Data Autofill is Enterprise-only)\n- The **verified** community node `@canva/n8n-nodes-canva` (officially provided by Canva).",
+				"height": 956,
+				"width": 460
+			},
+			"id": "d6efe562-5d39-4f82-9c5b-37da392d2ba5",
+			"name": "About this template",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [-736, -352]
+		},
+		{
+			"parameters": {
+				"content": "## Google Sheets trigger\n\nThe Google Sheets trigger normally fires on **every cell edit** — usually before the row is finished.\n\nThis template watches **only the `ready` column** (trigger option “Columns to Watch”), and the IF node only lets a row through when `ready` is exactly `YES`.\n\nAfter the design is created, the workflow sets `ready` to `DONE`, so a row is never processed twice. To re-run a listing, set `ready` back to `YES`.",
+				"height": 948,
+				"width": 480,
+				"color": 7
+			},
+			"id": "da888bab-0aad-4dc3-b396-2c16684fb184",
+			"name": "Note — trigger",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [-96, -352]
+		},
+		{
+			"parameters": {
+				"content": "## Find the listing photo\n\nSearches your Drive folder for a file whose **name starts with the listing ID**.\n\nThe folder must be shared as “Anyone with the link → Viewer” so Canva can download the image. If no photo is found, the row's `status` is updated as *`NO_PHOTO`* instead of failing.",
+				"height": 948,
+				"width": 428,
+				"color": 7
+			},
+			"id": "e65f3f57-b86a-4983-a059-70f986e2dafa",
+			"name": "Note — photo search",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [976, -352]
+		},
+		{
+			"parameters": {
+				"content": "## Upload & autofill\n\nThe photo is uploaded to the Canva media library, then Data Autofill creates a new design from your brand template with the listing details.\n\nField names in the Autofill node must match your brand template's dataset exactly.",
+				"height": 480,
+				"width": 492,
+				"color": 7
+			},
+			"id": "1d024dd9-fbbf-421b-a9b8-703ac1c96222",
+			"name": "Note — Canva",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [1488, -352]
+		},
+		{
+			"parameters": {
+				"content": "## Write results back\n\nThe row is updated with the Canva design URL:\n\n`ready`: *`DONE`*\n`design_url`: *`{{ID_FROM_PREVIOUS_STEP}}`*\n`status`: *`DESIGN_WITH_PHOTO`*",
+				"height": 484,
+				"width": 420,
+				"color": 7
+			},
+			"id": "f2c0ab09-3e9f-494b-b872-6030847f03ec",
+			"name": "Note — write back",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [2064, -352]
+		},
+		{
+			"parameters": {
+				"conditions": {
+					"options": {
+						"caseSensitive": true,
+						"leftValue": "",
+						"typeValidation": "strict",
+						"version": 1
+					},
+					"conditions": [
+						{
+							"id": "cond-ready-01",
+							"leftValue": "={{ ($json.ready ?? '').toString().trim().toUpperCase() }}",
+							"rightValue": "YES",
+							"operator": {
+								"type": "string",
+								"operation": "equals"
+							}
+						}
+					],
+					"combinator": "and"
+				},
+				"options": {}
+			},
+			"id": "80bab3c6-1084-46da-97c2-971991945c2a",
+			"name": "Row marked ready?",
+			"type": "n8n-nodes-base.if",
+			"typeVersion": 2,
+			"position": [208, 144]
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{
+							"id": "cfg-0001",
+							"name": "brand_template_id",
+							"value": "EAHQ2VYZwb0",
+							"type": "string"
+						},
+						{
+							"id": "cfg-0002",
+							"name": "drive_folder_id",
+							"value": "1ae3CbLDrRWR4ps9IEmN_Dt6emnWr-Ik6",
+							"type": "string"
+						}
+					]
+				},
+				"includeOtherFields": true,
+				"options": {}
+			},
+			"id": "1a095eec-70c5-4f70-8e4e-2f138a6a6b08",
+			"name": "Workflow configuration",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [624, 128]
+		},
+		{
+			"parameters": {
+				"resource": "asset",
+				"operation": "upload",
+				"name": "={{ $('New or updated row').item.json.listing_id + ' — listing photo' }}",
+				"url": "={{ 'https://lh3.googleusercontent.com/d/' + $json.id }}",
+				"maxWait": 120
+			},
+			"id": "be7fdc03-59bb-4afb-ac25-76b182a7f7ec",
+			"name": "Upload photo to Canva",
+			"type": "@canva/n8n-nodes-canva.canva",
+			"typeVersion": 1,
+			"position": [1568, -64],
+			"credentials": {
+				"canvaOAuth2Api": {
+					"id": "o6TYO6KSh8phx9wI",
+					"name": "Canva account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"operation": "update",
+				"documentId": {
+					"__rl": true,
+					"value": "https://docs.google.com/spreadsheets/d/1N5KB6usRiZWNkypaA7ONvxuZYTWRlMYp4fOwy-7Rymo/edit",
+					"mode": "url"
+				},
+				"sheetName": {
+					"__rl": true,
+					"value": 1535022352,
+					"mode": "list",
+					"cachedResultName": "List",
+					"cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N5KB6usRiZWNkypaA7ONvxuZYTWRlMYp4fOwy-7Rymo/edit#gid=1535022352"
+				},
+				"columns": {
+					"mappingMode": "defineBelow",
+					"value": {
+						"listing_id": "={{ $('New or updated row').item.json.listing_id }}",
+						"design_url": "={{ $json.job.result.design.url }}",
+						"ready": "DONE",
+						"status": "DESIGN_WITH_PHOTO"
+					},
+					"matchingColumns": ["listing_id"],
+					"schema": [
+						{
+							"id": "ready",
+							"displayName": "ready",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true
+						},
+						{
+							"id": "listing_id",
+							"displayName": "listing_id",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": false
+						},
+						{
+							"id": "address",
+							"displayName": "address",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true
+						},
+						{
+							"id": "price",
+							"displayName": "price",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true
+						},
+						{
+							"id": "beds",
+							"displayName": "beds",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true
+						},
+						{
+							"id": "baths",
+							"displayName": "baths",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true
+						},
+						{
+							"id": "agent_name",
+							"displayName": "agent_name",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true
+						},
+						{
+							"id": "agent_phone",
+							"displayName": "agent_phone",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true
+						},
+						{
+							"id": "design_url",
+							"displayName": "design_url",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true
+						},
+						{
+							"id": "status",
+							"displayName": "status",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": false
+						},
+						{
+							"id": "row_number",
+							"displayName": "row_number",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "number",
+							"canBeUsedToMatch": true,
+							"readOnly": true,
+							"removed": true
+						}
+					],
+					"attemptToConvertTypes": false,
+					"convertFieldsToString": false
+				},
+				"options": {}
+			},
+			"id": "4837baaf-90d2-4c3d-923a-5293d1aebb70",
+			"name": "Write design link to sheet",
+			"type": "n8n-nodes-base.googleSheets",
+			"typeVersion": 4.5,
+			"position": [2208, -64],
+			"credentials": {
+				"googleSheetsOAuth2Api": {
+					"id": "oC47ORikxRzYsPQn",
+					"name": "Google Sheets account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"operation": "update",
+				"documentId": {
+					"__rl": true,
+					"value": "={{$('New or updated row').params.documentId.value }}",
+					"mode": "url"
+				},
+				"sheetName": {
+					"__rl": true,
+					"value": 1535022352,
+					"mode": "list",
+					"cachedResultName": "List",
+					"cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N5KB6usRiZWNkypaA7ONvxuZYTWRlMYp4fOwy-7Rymo/edit#gid=1535022352"
+				},
+				"columns": {
+					"mappingMode": "defineBelow",
+					"value": {
+						"listing_id": "={{ $('New or updated row').item.json.listing_id }}",
+						"ready": "DONE",
+						"status": "NO_PHOTO"
+					},
+					"matchingColumns": ["listing_id"],
+					"schema": [
+						{
+							"id": "ready",
+							"displayName": "ready",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": false
+						},
+						{
+							"id": "listing_id",
+							"displayName": "listing_id",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": false
+						},
+						{
+							"id": "address",
+							"displayName": "address",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": true
+						},
+						{
+							"id": "price",
+							"displayName": "price",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": true
+						},
+						{
+							"id": "beds",
+							"displayName": "beds",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": true
+						},
+						{
+							"id": "baths",
+							"displayName": "baths",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": true
+						},
+						{
+							"id": "agent_name",
+							"displayName": "agent_name",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": true
+						},
+						{
+							"id": "agent_phone",
+							"displayName": "agent_phone",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": true
+						},
+						{
+							"id": "design_url",
+							"displayName": "design_url",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": true
+						},
+						{
+							"id": "status",
+							"displayName": "status",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "string",
+							"canBeUsedToMatch": true,
+							"removed": false
+						},
+						{
+							"id": "row_number",
+							"displayName": "row_number",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"type": "number",
+							"canBeUsedToMatch": true,
+							"readOnly": true,
+							"removed": true
+						}
+					],
+					"attemptToConvertTypes": false,
+					"convertFieldsToString": false
+				},
+				"options": {}
+			},
+			"id": "5ed07e8d-984b-43e1-8f9a-c74d0f7305ef",
+			"name": "Mark row as missing photo",
+			"type": "n8n-nodes-base.googleSheets",
+			"typeVersion": 4.5,
+			"position": [1568, 384],
+			"credentials": {
+				"googleSheetsOAuth2Api": {
+					"id": "oC47ORikxRzYsPQn",
+					"name": "Google Sheets account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"content": "## Workflow configuration\n\nThis is where you'll set the workflow's main variables:\n\n`brand_template_id`: It is the ID of the brand template you created (with your Entreprise plan), containing the dataset fields mentioned on the main yellow sticky note. You can find it in the URL: *`https://www.canva.com/brand/brand-templates/X`*\n\n`drive_folder_id`: It is the ID of the Google Drive folder containing the assets you'll want to search into. You can also find it in the URL: *`https://drive.google.com/drive/u/0/folders/X`*\n",
+				"height": 944,
+				"width": 432,
+				"color": 7
+			},
+			"type": "n8n-nodes-base.stickyNote",
+			"position": [464, -352],
+			"typeVersion": 1,
+			"id": "1eabc36c-9f20-4297-88c2-3e8f8decdcaa",
+			"name": "Sticky Note"
+		},
+		{
+			"parameters": {
+				"conditions": {
+					"options": {
+						"caseSensitive": true,
+						"leftValue": "",
+						"typeValidation": "strict",
+						"version": 1
+					},
+					"conditions": [
+						{
+							"id": "cond-photo-01",
+							"leftValue": "={{ ($json.id ?? '') !== '' }}",
+							"rightValue": "",
+							"operator": {
+								"type": "boolean",
+								"operation": "true",
+								"singleValue": true
+							}
+						}
+					],
+					"combinator": "and"
+				},
+				"options": {}
+			},
+			"id": "317e468e-4bfc-4df7-8109-5a239f6d90ff",
+			"name": "Photo found?",
+			"type": "n8n-nodes-base.if",
+			"typeVersion": 2,
+			"position": [1232, 128]
+		},
+		{
+			"parameters": {
+				"resource": "fileFolder",
+				"queryString": "={{ $json.listing_id }}",
+				"limit": 1,
+				"filter": {
+					"folderId": {
+						"__rl": true,
+						"mode": "id",
+						"value": "={{ $json.drive_folder_id }}"
+					},
+					"whatToSearch": "files"
+				},
+				"options": {
+					"fields": ["id", "name", "webViewLink"]
+				}
+			},
+			"id": "7f9c2277-0e8e-472f-ac45-e586801025a3",
+			"name": "Find photo in Drive",
+			"type": "n8n-nodes-base.googleDrive",
+			"typeVersion": 3,
+			"position": [1040, 128],
+			"alwaysOutputData": true,
+			"credentials": {
+				"googleDriveOAuth2Api": {
+					"id": "DqtwixW7FsXuImH4",
+					"name": "Google Drive account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"pollTimes": {
+					"item": [
+						{
+							"mode": "everyMinute"
+						}
+					]
+				},
+				"documentId": {
+					"__rl": true,
+					"value": "https://docs.google.com/spreadsheets/d/1N5KB6usRiZWNkypaA7ONvxuZYTWRlMYp4fOwy-7Rymo/edit",
+					"mode": "url"
+				},
+				"sheetName": {
+					"__rl": true,
+					"value": 1535022352,
+					"mode": "list",
+					"cachedResultName": "Untitled",
+					"cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N5KB6usRiZWNkypaA7ONvxuZYTWRlMYp4fOwy-7Rymo/edit#gid=1535022352"
+				},
+				"options": {
+					"columnsToWatch": ["ready"]
+				}
+			},
+			"id": "bac559e4-ae36-4361-bf48-32d537958b66",
+			"name": "New or updated row",
+			"type": "n8n-nodes-base.googleSheetsTrigger",
+			"typeVersion": 1,
+			"position": [-16, 144],
+			"credentials": {
+				"googleSheetsTriggerOAuth2Api": {
+					"id": "fyitV3buoADpIXvJ",
+					"name": "Google Sheets Trigger account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"resource": "autofill",
+				"brandTemplateId": "={{ $('Workflow configuration').item.json.brand_template_id }}",
+				"data": "={{ JSON.stringify({\n  property_photo: { type: 'image', asset_id: $json.job.asset.id },\n  address: { type: 'text', text: $('New or updated row').item.json.address },\n  price: { type: 'text', text: $('New or updated row').item.json.price.toString() },\n  beds_baths: { type: 'text', text: $('New or updated row').item.json.beds + ' bed · ' + $('New or updated row').item.json.baths + ' bath' },\n  agent_name: { type: 'text', text: $('New or updated row').item.json.agent_name },\n  agent_phone: { type: 'text', text: $('New or updated row').item.json.agent_phone.toString() }\n}) }}",
+				"title": "={{ 'Listing flyer — ' + $('New or updated row').item.json.listing_id + ' ' + $('New or updated row').item.json.address }}"
+			},
+			"id": "ed3ebab0-21ea-441d-b563-cc5616d8a44e",
+			"name": "Create design from brand template",
+			"type": "@canva/n8n-nodes-canva.canva",
+			"typeVersion": 1,
+			"position": [1792, -64],
+			"credentials": {
+				"canvaOAuth2Api": {
+					"id": "o6TYO6KSh8phx9wI",
+					"name": "Canva account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"content": "## Write results back\n\nThe row is updated without creating a Canva design:\n\n`ready`: *`DONE`*\n`status`: *`NO_PHOTO`*",
+				"height": 436,
+				"width": 484,
+				"color": 7
+			},
+			"id": "5a0f7836-82e3-4128-bc8d-0d3d616b9421",
+			"name": "Note — write back1",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [1488, 160]
+		}
+	],
+	"pinData": {
+		"New or updated row": [
+			{
+				"json": {
+					"ready": "YES",
+					"listing_id": "TEST-1030",
+					"address": "48 Maple Court, Surry Hills NSW 2010",
+					"price": 925000,
+					"beds": 2,
+					"baths": 1,
+					"agent_name": "Sam Chen",
+					"agent_phone": "0400 000 002",
+					"design_url": "",
+					"status": ""
+				}
+			}
+		]
+	},
+	"connections": {
+		"Row marked ready?": {
+			"main": [
+				[
+					{
+						"node": "Workflow configuration",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Workflow configuration": {
+			"main": [
+				[
+					{
+						"node": "Find photo in Drive",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Upload photo to Canva": {
+			"main": [
+				[
+					{
+						"node": "Create design from brand template",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Photo found?": {
+			"main": [
+				[
+					{
+						"node": "Upload photo to Canva",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[
+					{
+						"node": "Mark row as missing photo",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Find photo in Drive": {
+			"main": [
+				[
+					{
+						"node": "Photo found?",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"New or updated row": {
+			"main": [
+				[
+					{
+						"node": "Row marked ready?",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Create design from brand template": {
+			"main": [
+				[
+					{
+						"node": "Write design link to sheet",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		}
+	},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1",
+		"binaryMode": "separate",
+		"availableInMCP": false
+	},
+	"versionId": "7302441f-0a38-49ec-9f49-ff15f3481102",
+	"meta": {
+		"templateCredsSetupCompleted": true,
+		"instanceId": "6d0a9a09f3520db0a7aeabe4fbe8667cfd32623920d2e1185b9c3568bcebf7e2"
+	},
+	"nodeGroups": [],
+	"id": "Q6pfJvYbucmMmFph",
+	"tags": []
+}
