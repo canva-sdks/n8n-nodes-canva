@@ -3,7 +3,7 @@
 	"nodes": [
 		{
 			"parameters": {
-				"content": "# 🏠 Generate real estate listing flyers from Google Sheets and Google Drive with Canva\n\n**Who's it for**\nReal estate agencies and marketing teams on Canva Enterprise that produce listing flyers at scale. (Note that it can also be extended to users outside of this industry!)\n\n**How it works**\n\n1. A real estate agent adds a new row to a Google Sheet (listing ID, address, price, beds, baths, and agent details) then sets the  ready` column to *`YES`*.\n2. The workflow finds the listing photo in a Google Drive folder, matching the file whose name starts with the listing ID (e.g. `RE-1024.jpg`).\n3. The photo is uploaded to Canva as an asset.\n4. Canva Data Autofill populates your Canva brand template with the spreadsheet data, and the finished design link is written back to the Google Sheet.\n\n**Setup**\n\n- [ ] Create a Google Sheet with columns: `ready`, `listing_id`, `address`, `price`, `beds`, `baths`, `agent_name`, `agent_phone`, `design_url`, `status`.\n- [ ] Share a Google Drive photo folder as “Anyone with the link → Viewer” (Canva downloads the image by URL).\n- [ ] In Canva, create a brand template with a dataset: `property_photo` (image) and `address`, `price`, `beds_baths`, `agent_name`, `agent_phone` (text).\n- [ ] Enter your brand template ID and Drive folder ID in **Workflow configuration**.\n- [ ] Connect your Google and Canva credentials.\n\n**Requirements**\n- Canva Enterprise account (Data Autofill is Enterprise-only)\n- The **verified** community node `@canva/n8n-nodes-canva` (officially provided by Canva).",
+				"content": "# 🏠 Generate real estate listing flyers from Google Sheets and Google Drive with Canva\n\n**Who's it for**\nReal estate agencies and marketing teams on Canva Enterprise that produce listing flyers at scale. (Note that it can also be extended to users outside of this industry!)\n\n**How it works**\n\n1. A real estate agent adds a new row to a Google Sheet (listing ID, address, price, beds, baths, and agent details) then sets the `ready` column to *`YES`*.\n2. The workflow finds the listing photo in a Google Drive folder, matching the file whose name starts with the listing ID (e.g. `RE-1024.jpg`).\n3. The photo is uploaded to Canva as an asset.\n4. Canva Data Autofill populates your Canva brand template with the spreadsheet data, and the finished design link is written back to the Google Sheet.\n\n**Setup**\n\n- [ ] Create a Google Sheet with columns: `ready`, `listing_id`, `address`, `price`, `beds`, `baths`, `agent_name`, `agent_phone`, `design_url`, `status`.\n- [ ] Share a Google Drive photo folder as “Anyone with the link → Viewer” (Canva downloads the image by URL).\n- [ ] In Canva, create a brand template with a dataset: `property_photo` (image) and `address`, `price`, `beds_baths`, `agent_name`, `agent_phone` (text).\n- [ ] Enter your brand template ID and Drive folder ID in **Workflow configuration**.\n- [ ] Connect your Google and Canva credentials.\n\n**Requirements**\n- Canva Enterprise account (Data Autofill is Enterprise-only)\n- The **verified** community node `@canva/n8n-nodes-canva` (officially provided by Canva).",
 				"height": 956,
 				"width": 460
 			},
@@ -11,7 +11,7 @@
 			"name": "About this template",
 			"type": "n8n-nodes-base.stickyNote",
 			"typeVersion": 1,
-			"position": [0, 0]
+			"position": [0, 96]
 		},
 		{
 			"parameters": {
@@ -24,7 +24,7 @@
 			"name": "Note — trigger",
 			"type": "n8n-nodes-base.stickyNote",
 			"typeVersion": 1,
-			"position": [640, 0]
+			"position": [640, 96]
 		},
 		{
 			"parameters": {
@@ -37,7 +37,7 @@
 			"name": "Note — photo search",
 			"type": "n8n-nodes-base.stickyNote",
 			"typeVersion": 1,
-			"position": [1712, 0]
+			"position": [1712, 96]
 		},
 		{
 			"parameters": {
@@ -50,7 +50,7 @@
 			"name": "Note — Canva",
 			"type": "n8n-nodes-base.stickyNote",
 			"typeVersion": 1,
-			"position": [2224, 0]
+			"position": [2224, 96]
 		},
 		{
 			"parameters": {
@@ -63,7 +63,7 @@
 			"name": "Note — write back",
 			"type": "n8n-nodes-base.stickyNote",
 			"typeVersion": 1,
-			"position": [2800, 0]
+			"position": [2800, 96]
 		},
 		{
 			"parameters": {
@@ -93,7 +93,7 @@
 			"name": "Row marked ready?",
 			"type": "n8n-nodes-base.if",
 			"typeVersion": 2,
-			"position": [944, 496]
+			"position": [944, 688]
 		},
 		{
 			"parameters": {
@@ -132,7 +132,7 @@
 			"name": "Workflow configuration",
 			"type": "n8n-nodes-base.set",
 			"typeVersion": 3.4,
-			"position": [1360, 480]
+			"position": [1360, 672]
 		},
 		{
 			"parameters": {
@@ -146,7 +146,7 @@
 			"name": "Upload photo to Canva",
 			"type": "@canva/n8n-nodes-canva.canva",
 			"typeVersion": 1,
-			"position": [2304, 320]
+			"position": [2304, 416]
 		},
 		{
 			"parameters": {
@@ -290,7 +290,7 @@
 			"name": "Write design link to sheet",
 			"type": "n8n-nodes-base.googleSheets",
 			"typeVersion": 4.5,
-			"position": [2944, 320]
+			"position": [2944, 416]
 		},
 		{
 			"parameters": {
@@ -435,7 +435,7 @@
 			"name": "Mark row as missing photo",
 			"type": "n8n-nodes-base.googleSheets",
 			"typeVersion": 4.5,
-			"position": [2304, 768]
+			"position": [2304, 864]
 		},
 		{
 			"parameters": {
@@ -445,7 +445,7 @@
 				"color": 7
 			},
 			"type": "n8n-nodes-base.stickyNote",
-			"position": [1200, 0],
+			"position": [1200, 96],
 			"typeVersion": 1,
 			"id": "39433dca-06f9-4c2f-8e24-27b475069938",
 			"name": "Note — configuration"
@@ -479,7 +479,7 @@
 			"name": "Photo found?",
 			"type": "n8n-nodes-base.if",
 			"typeVersion": 2,
-			"position": [1968, 480]
+			"position": [1968, 672]
 		},
 		{
 			"parameters": {
@@ -502,7 +502,7 @@
 			"name": "Find photo in Drive",
 			"type": "n8n-nodes-base.googleDrive",
 			"typeVersion": 3,
-			"position": [1776, 480],
+			"position": [1776, 672],
 			"alwaysOutputData": true
 		},
 		{
@@ -516,7 +516,7 @@
 			"name": "Create design from brand template",
 			"type": "@canva/n8n-nodes-canva.canva",
 			"typeVersion": 1,
-			"position": [2528, 320]
+			"position": [2528, 416]
 		},
 		{
 			"parameters": {
@@ -529,7 +529,7 @@
 			"name": "Note — write back (no photo)",
 			"type": "n8n-nodes-base.stickyNote",
 			"typeVersion": 1,
-			"position": [2224, 544]
+			"position": [2224, 640]
 		},
 		{
 			"parameters": {
@@ -550,15 +550,14 @@
 					"value": "YOUR_SHEET_ID",
 					"mode": "list"
 				},
-				"event": "anyUpdate",
 				"options": {
 					"columnsToWatch": ["ready"]
 				}
 			},
 			"type": "n8n-nodes-base.googleSheetsTrigger",
 			"typeVersion": 1,
-			"position": [720, 496],
 			"id": "5fe307ed-8fa7-41a2-8b9d-81919214e857",
+			"position": [720, 688],
 			"name": "On Sheet row update"
 		}
 	],
