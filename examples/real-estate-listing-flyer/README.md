@@ -7,7 +7,7 @@ Import `workflow.json` via _Workflows → Import from file_.
 ## Prerequisites
 
 - n8n with the `@canva/n8n-nodes-canva` node installed — a [verified community node](https://docs.n8n.io/integrations/community-nodes/installation/verified-install/), available on n8n Cloud (Starter+, v1.94+) via the Nodes panel, or on self-hosted n8n
-- A Canva **Enterprise** account (Data Autofill requires it) and a [Canva OAuth2 credential](../../README.md#credentials) with `brandtemplate:*`, `design:content:*` and `asset:*` scopes enabled (the workflow uploads the photo and autofills a brand template).
+- A Canva **Pro** account or above (Data Autofill requires it) and a [Canva OAuth2 credential](../../README.md#credentials) with `brandtemplate:*`, `design:content:*` and `asset:*` scopes enabled (the workflow uploads the photo and autofills a brand template).
 - Google credentials in n8n: a **Google Sheets** credential (used by the trigger and both write-back nodes) and a **Google Drive** credential (used by the photo search). Both are Google OAuth2 credentials — enable the Sheets and Drive APIs in your Google Cloud project.
 - A Canva brand template with a dataset:
 

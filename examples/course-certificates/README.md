@@ -11,7 +11,7 @@ Google Sheets (row update) → Canva Autofill → Canva Export (PDF) → Downloa
 ## Prerequisites
 
 - n8n with the `@canva/n8n-nodes-canva` node installed — a [verified community node](https://docs.n8n.io/integrations/community-nodes/installation/verified-install/), available on n8n Cloud (Starter+, v1.94+) via the Nodes panel, or on self-hosted n8n
-- A Canva **Enterprise** account (Data Autofill requires it) and a [Canva OAuth2 credential](../../README.md#credentials) with `brandtemplate:*` and `design:content:*` scopes enabled (no asset scopes needed — nothing is uploaded)
+- A Canva **Pro** account or above (Data Autofill requires it) and a [Canva OAuth2 credential](../../README.md#credentials) with `brandtemplate:*` and `design:content:*` scopes enabled (no asset scopes needed — nothing is uploaded)
 - A **certificate brand template with a dataset** — all text fields:
 
   | Field           | Type |

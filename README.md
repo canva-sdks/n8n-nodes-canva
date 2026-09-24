@@ -97,7 +97,7 @@ Your integration's **Scopes** settings should look like this:
 
 ### Autofill
 
-> 💎 The Autofill API can only be used on behalf of users who are members of a Canva Enterprise organization.
+> 💎 The Autofill API can only be used on behalf of users on a Canva Pro plan or above.
 
 | Operation | Description                                                                   |
 | --------- | ----------------------------------------------------------------------------- |
