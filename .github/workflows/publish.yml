@@ -5,47 +5,49 @@
 # requirement. Provenance lets anyone cryptographically verify that a package
 # was built by this exact workflow, from this exact repository and commit.
 #
-# ─── PREREQUISITES ─────────────────────────────────────────────────────────────
+# ─── AUTHENTICATION ────────────────────────────────────────────────────────────
 #
-# @n8n/node-cli ≥ 0.23.0 is required. Earlier versions do not support the
-# provenance flag passed by `npm run release` in CI, and the publish step will
-# fail. Check the version installed in this project with:
+# This workflow authenticates with npm Trusted Publishing (OIDC): GitHub mints a
+# short-lived token for this job and npm exchanges it for publish rights. There
+# is no NPM_TOKEN secret. npm is phasing out token-based publishing, so do not
+# add one back.
 #
-#   npm list @n8n/node-cli
+# Requirements:
+#   - npm CLI ≥ 11.5.1 (ships with the Node version pinned in .nvmrc).
+#   - `id-token: write` on the job (see below).
+#   - `repository.url` in package.json must match this GitHub repository.
 #
-# To upgrade, add @n8n/node-cli@latest as a dev dependency using your package manager.
+# ─── ONE-TIME SETUP (npmjs.com) ────────────────────────────────────────────────
 #
-# ─── ONE-TIME SETUP ────────────────────────────────────────────────────────────
+# Must be done by an account with write access to @canva/n8n-nodes-canva
+# (currently owned by the `canva-dev` npm account).
 #
-# Option A — OIDC Trusted Publishing (recommended, no long-lived secrets):
-#   1. Log in to npmjs.com and open your package's settings.
-#   2. Under "Publish access" → "Trusted Publishers", click "Add a publisher".
-#   3. Select GitHub Actions and fill in:
-#        Repository owner: <your-github-username-or-org>
-#        Repository name:  <your-repo-name>
-#        Workflow name:    publish.yml
-#        Environment:      (leave blank unless you use GitHub Environments)
-#   4. Leave the NPM_TOKEN secret unset in this repository. GitHub's OIDC
-#      token is used instead — no secret ever touches your repo settings.
+#   1. Open https://www.npmjs.com/package/@canva/n8n-nodes-canva/access
+#   2. Under "Trusted Publisher", choose GitHub Actions and fill in:
+#        Organization or user: canva-sdks
+#        Repository:           n8n-nodes-canva
+#        Workflow filename:    publish.yml
+#        Environment name:     (leave blank)
+#   3. Under "Publishing access", select
+#      "Require two-factor authentication and disallow tokens".
 #
-# Option B — npm Automation Token (fallback):
-#   1. On npmjs.com: Access Tokens → Generate New Token → Granular Access Token.
-#      Scope it to this package with "Read and write" publish permission.
-#   2. In GitHub: Settings → Secrets and variables → Actions → New secret.
-#      Name it NPM_TOKEN and paste the token value.
+# Or from a terminal logged in to that account:
 #
-# Both options work with --provenance. Provenance is signed by GitHub's OIDC
-# infrastructure regardless of how npm authentication is handled.
+#   npm trust github @canva/n8n-nodes-canva --repo canva-sdks/n8n-nodes-canva \
+#     --file publish.yml --allow-publish
+#
+# A new trusted publisher expires if it has not published within 2 days, so
+# push a release tag (or re-run a failed publish) soon after setting it up.
+#
+# If this file is renamed, update the workflow filename on npmjs.com too.
 #
 # ─── TAG CONVENTION ────────────────────────────────────────────────────────────
 #
 # This workflow triggers on tags matching "*.*.*" (e.g. 0.2.0).
-# If you prefer tags with a "v" prefix (e.g. v0.2.0), change the filter to:
-#   tags: ['v*.*.*']
 #
 # ─── RELEASE PROCESS ───────────────────────────────────────────────────────────
 #
-# Run the following command locally to start an interactive release:
+# Run the following command locally from an up-to-date `main`:
 #
 #   npm run release
 #
@@ -58,7 +60,6 @@ on:
   push:
     tags:
       # Matches 0.1.0, 1.2.3, 2.0.0-rc.1, etc.
-      # See "TAG CONVENTION" above if you prefer tags with a "v" prefix.
       - '*.*.*'
 
 jobs:
@@ -67,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      # Required to mint an OIDC token for npm provenance attestation.
+      # Required for npm Trusted Publishing and the provenance attestation.
       id-token: write
       # Scoped down from the default (write) for least-privilege publishing.
       contents: read
@@ -78,22 +79,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
         run: 'npm ci'
 
       - name: Release
-        # Publishes to npm with a provenance attestation (requires id-token: write above).
-        # Lint and build run automatically as part of the release process.
-        #
-        # Option A (OIDC): leave NPM_TOKEN unset — the token step is skipped and
-        #   npm uses the OIDC exchange instead.
-        # Option B (token): set NPM_TOKEN in repo secrets — it is written to
-        #   .npmrc here before publishing.
-        run: |
-          [ -n "$NPM_TOKEN" ] && npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
-          npm run release
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # Lints, builds, then runs `npm publish` with provenance. npm detects
+        # the GitHub Actions OIDC environment and uses Trusted Publishing.
+        run: 'npm run release'
