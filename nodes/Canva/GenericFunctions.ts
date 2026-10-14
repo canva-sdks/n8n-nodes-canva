@@ -21,6 +21,7 @@ const USER_AGENT = `n8n-nodes-canva/${version}`;
 type ApiRequestError = {
 	httpCode?: string;
 	statusCode?: number;
+	context?: { data?: { code?: string } };
 	response?: { status?: number; headers?: Record<string, string> };
 };
 
@@ -39,7 +40,12 @@ export async function canvaApiRequest(
 			// Safe to retry: a 429 means Canva rejected the request without processing it.
 			const err = error as ApiRequestError;
 			const status = err.httpCode ?? err.statusCode ?? err.response?.status;
-			if (String(status) !== '429' || attempt >= MAX_RATE_LIMIT_RETRIES) {
+
+			// Running out of AI credits is also a 429, but the quota won't reset within the
+			// retry window, so fail straight away instead of waiting.
+			const creditQuotaExceeded = err.context?.data?.code === 'credit_quota_exceeded';
+
+			if (String(status) !== '429' || creditQuotaExceeded || attempt >= MAX_RATE_LIMIT_RETRIES) {
 				throw new NodeApiError(ctx.getNode(), error as JsonObject);
 			}
 

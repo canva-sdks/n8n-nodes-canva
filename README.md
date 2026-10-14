@@ -64,14 +64,14 @@ Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations
 
 - In the **Scopes** tab, enable the following scopes:
 
-| Scope                                                                                    | Used by                                           |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `asset:read` / `asset:write`                                                             | Asset resource                                    |
-| `brandtemplate:content:read` / `brandtemplate:content:write` / `brandtemplate:meta:read` | Brand Template resource                           |
-| `comment:read` / `comment:write`                                                         | Comment resource (Preview)                        |
-| `design:content:read` / `design:content:write` / `design:meta:read`                      | Design, Autofill, Export, Merge, Resize resources |
-| `folder:read` / `folder:write`                                                           | Folder resource                                   |
-| `profile:read`                                                                           | User resource                                     |
+| Scope                                                                                    | Used by                                                          |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `asset:read` / `asset:write`                                                             | Asset resource                                                   |
+| `brandtemplate:content:read` / `brandtemplate:content:write` / `brandtemplate:meta:read` | Brand Template resource                                          |
+| `comment:read` / `comment:write`                                                         | Comment resource (Preview)                                       |
+| `design:content:read` / `design:content:write` / `design:meta:read`                      | Design, Autofill, Design Import, Export, Merge, Resize resources |
+| `folder:read` / `folder:write`                                                           | Folder resource                                                  |
+| `profile:read`                                                                           | User resource                                                    |
 
 Your integration's **Scopes** settings should look like this:
 
@@ -139,9 +139,10 @@ Your integration's **Scopes** settings should look like this:
 
 ### Design Import
 
-| Operation       | Description                                                                                    |
-| --------------- | ---------------------------------------------------------------------------------------------- |
-| Import From URL | Import an external file (e.g. PPTX, PDF) into Canva from a URL and wait for completion (async) |
+| Operation                     | Description                                                                                        |
+| ----------------------------- | -------------------------------------------------------------------------------------------------- |
+| Import From Image _(Preview)_ | Turn a flat image asset into an editable design using Magic Layers and wait for completion (async) |
+| Import From URL               | Import an external file (e.g. PPTX, PDF) into Canva from a URL and wait for completion (async)     |
 
 ### Export
 
@@ -204,6 +205,12 @@ Operations marked _(Preview)_ use endpoints that are still in preview on the Can
 ### Moving items
 
 The **Folder → Move Item** operation accepts any item ID (design, asset, or folder). To move an item to the top-level Projects folder, use `root` as the **To Folder ID**.
+
+### Magic Layers
+
+**Design Import → Import From Image** turns a flat image (such as a poster, flyer, or social graphic) into a Canva design where each element is a separate, editable layer. It takes the ID of an image asset that's already in the user's Canva account, so upload the image first with **Asset → Upload From URL** and pass the resulting `job.asset.id`.
+
+Each import uses the user's Canva AI credits, and Magic Layers must be allowed in the user's team permissions. **User → Get Capabilities** returns `image_to_design_imports` when the user can use it. If the user is out of AI credits, the node fails immediately with a `credit_quota_exceeded` error instead of retrying.
 
 ### Autofill dataset format
 

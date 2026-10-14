@@ -1,4 +1,7 @@
 import type { INodeProperties } from 'n8n-workflow';
+import { designImportCreateImageImportDescription } from './createImageImport';
+import { designImportCreateImageImportCreditsNoticeDescription } from './createImageImportCreditsNotice';
+import { designImportCreateImageImportPreviewNoticeDescription } from './createImageImportPreviewNotice';
 import { designImportCreateImportDescription } from './createImport';
 
 export const designImportOperations: INodeProperties[] = [
@@ -9,6 +12,13 @@ export const designImportOperations: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: { show: { resource: ['designImport'] } },
 		options: [
+			{
+				name: 'Import From Image (Preview)',
+				value: 'createImageImport',
+				description:
+					'Turn a flat image asset into an editable design using Magic Layers (waits for the job to complete)',
+				action: 'Import a design from an image',
+			},
 			{
 				name: 'Import From URL',
 				value: 'createImport',
@@ -23,5 +33,8 @@ export const designImportOperations: INodeProperties[] = [
 
 export const designImportDescription: INodeProperties[] = [
 	...designImportOperations,
+	...designImportCreateImageImportPreviewNoticeDescription,
+	...designImportCreateImageImportCreditsNoticeDescription,
+	...designImportCreateImageImportDescription,
 	...designImportCreateImportDescription,
 ];

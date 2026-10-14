@@ -446,7 +446,62 @@ export class Canva implements INodeType {
 
 				// ─── Design Import ─────────────────────────────────────────────────
 				else if (resource === 'designImport') {
-					if (operation === 'createImport') {
+					if (operation === 'createImageImport') {
+						const assetId = this.getNodeParameter('assetId', i) as string;
+						const title = this.getNodeParameter('title', i) as string;
+						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
+						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
+
+						const body: IDataObject = { image: { asset_id: assetId } };
+						if (title) body.title = title;
+
+						type ImageImportJob = {
+							job: { id: string; status: string; error?: { code: string; message: string } };
+						};
+
+						// 1. Create image-to-design import job (Magic Layers)
+						const createResp = (await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/image-to-design-imports`,
+							body,
+							json: true,
+						})) as ImageImportJob;
+
+						const importJobId = createResp.job.id;
+
+						// 2. Poll until done
+						const deadline = Date.now() + maxWait;
+						let jobResp = createResp;
+
+						while (jobResp.job.status === 'in_progress') {
+							if (Date.now() >= deadline) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Image import job ${importJobId} timed out after ${maxWait / 1000}s`,
+									{ itemIndex: i },
+								);
+							}
+							await sleep(pollInterval);
+							jobResp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/image-to-design-imports/${importJobId}`,
+								json: true,
+							})) as ImageImportJob;
+						}
+
+						// Include Canva's reason (e.g. moderation or quota errors) so the user knows
+						// whether retrying with a different image could help.
+						if (jobResp.job.status === 'failed') {
+							const reason = jobResp.job.error?.message;
+							throw new NodeOperationError(
+								this.getNode(),
+								`Image import job ${importJobId} failed${reason ? `: ${reason}` : ''}`,
+								{ itemIndex: i },
+							);
+						}
+
+						responseData = jobResp;
+					} else if (operation === 'createImport') {
 						const url = this.getNodeParameter('url', i) as string;
 						const title = this.getNodeParameter('title', i) as string;
 						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
