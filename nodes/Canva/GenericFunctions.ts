@@ -18,11 +18,14 @@ const MAX_RATE_LIMIT_RETRIES = 3;
  */
 const USER_AGENT = `n8n-nodes-canva/${version}`;
 
+type HttpErrorResponse = { status?: number; headers?: Record<string, string | undefined> };
+
 type ApiRequestError = {
 	httpCode?: string;
 	statusCode?: number;
 	context?: { data?: { code?: string } };
-	response?: { status?: number; headers?: Record<string, string> };
+	response?: HttpErrorResponse;
+	cause?: { response?: HttpErrorResponse }; // n8n wraps request errors but keeps the original Axios error on `cause` (not on n8n <= 2.30).
 };
 
 export async function canvaApiRequest(
@@ -49,7 +52,8 @@ export async function canvaApiRequest(
 				throw new NodeApiError(ctx.getNode(), error as JsonObject);
 			}
 
-			const retryAfter = Number(err.response?.headers?.['retry-after']);
+			const headers = err.cause?.response?.headers ?? err.response?.headers;
+			const retryAfter = Number(headers?.['retry-after']);
 			const waitMs = retryAfter > 0 ? retryAfter * 1000 : 5000 * 2 ** attempt; // 5s, 10s, 20s fallback
 			await sleep(waitMs);
 		}
