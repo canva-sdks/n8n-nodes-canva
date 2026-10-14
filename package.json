@@ -29,7 +29,8 @@
 		"prepublishOnly": "n8n-node prerelease"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"!dist/tsconfig.tsbuildinfo"
 	],
 	"publishConfig": {
 		"access": "public"
@@ -56,5 +57,12 @@
 	},
 	"engines": {
 		"node": ">=24"
+	},
+	"devEngines": {
+		"runtime": {
+			"name": "node",
+			"version": ">=24.15.0",
+			"onFail": "warn"
+		}
 	}
 }
