@@ -66,7 +66,7 @@ Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations
 
 | Scope                                                                                    | Used by                                                          |
 | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `asset:read` / `asset:write`                                                             | Asset resource                                                   |
+| `asset:read` / `asset:write`                                                             | Asset, Image Transformation resources                            |
 | `brandtemplate:content:read` / `brandtemplate:content:write` / `brandtemplate:meta:read` | Brand Template resource                                          |
 | `comment:read` / `comment:write`                                                         | Comment resource (Preview)                                       |
 | `design:content:read` / `design:content:write` / `design:meta:read`                      | Design, Autofill, Design Import, Export, Merge, Resize resources |
@@ -161,6 +161,16 @@ Your integration's **Scopes** settings should look like this:
 | Move Item  | Move a design, asset, or folder to a different folder |
 | Update     | Rename a folder                                       |
 
+### Image Transformation _(Preview API)_
+
+> ⚠️ All Image Transformation operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
+
+> 💎 Background removal requires a Canva plan with premium features (such as Canva Pro).
+
+| Operation         | Description                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------ |
+| Remove Background | Remove the background from an image asset and save the result as a new asset (async) |
+
 ### Merge _(Preview API)_
 
 > ⚠️ All Merge operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
@@ -189,7 +199,7 @@ Your integration's **Scopes** settings should look like this:
 
 ### Async operations
 
-Several operations — **Asset Upload From URL**, **Autofill**, **Design Import**, **Export**, **Merge**, and **Resize** — create background jobs in Canva. This node automatically polls for completion and returns the final result once the job succeeds.
+Several operations — **Asset Upload From URL**, **Autofill**, **Design Import**, **Export**, **Image Transformation**, **Merge**, and **Resize** — create background jobs in Canva. This node automatically polls for completion and returns the final result once the job succeeds.
 
 You can tune polling behaviour with two optional parameters available on each async operation:
 
@@ -202,6 +212,10 @@ If a job fails, the node throws an error with the Canva error details.
 
 Operations marked _(Preview)_ use endpoints that are still in preview on the Canva platform. They may change without notice and **cannot be used in integrations submitted to Canva's public integration review**. Use them only for internal or development workflows.
 
+### AI credits
+
+**Design Import → Import From Image** and **Image Transformation → Remove Background** use the user's Canva AI credits each time they start a job (checking on a running job doesn't). If the user is out of AI credits, the node fails immediately with a `credit_quota_exceeded` error instead of retrying.
+
 ### Moving items
 
 The **Folder → Move Item** operation accepts any item ID (design, asset, or folder). To move an item to the top-level Projects folder, use `root` as the **To Folder ID**.
@@ -210,7 +224,13 @@ The **Folder → Move Item** operation accepts any item ID (design, asset, or fo
 
 **Design Import → Import From Image** turns a flat image (such as a poster, flyer, or social graphic) into a Canva design where each element is a separate, editable layer. It takes the ID of an image asset that's already in the user's Canva account, so upload the image first with **Asset → Upload From URL** and pass the resulting `job.asset.id`.
 
-Each import uses the user's Canva AI credits, and Magic Layers must be allowed in the user's team permissions. **User → Get Capabilities** returns `image_to_design_imports` when the user can use it. If the user is out of AI credits, the node fails immediately with a `credit_quota_exceeded` error instead of retrying.
+Magic Layers must be allowed in the user's team permissions. **User → Get Capabilities** returns `image_to_design_imports` when the user can use it.
+
+### Background removal
+
+**Image Transformation → Remove Background** saves the cut-out image as a new asset and leaves the original untouched. Like Magic Layers, it takes the ID of an image asset that has finished uploading. The new asset's ID is at `job.result.asset.id`, ready to use in **Design → Create** or as an image field in **Autofill → Create**.
+
+It requires a Canva plan with premium features. **User → Get Capabilities** returns `background_removal` when the user can use it. If Canva can't find a subject to keep, the job fails and the node reports Canva's reason.
 
 ### Autofill dataset format
 

@@ -18,6 +18,7 @@ import { designDescription } from './resources/design';
 import { designImportDescription } from './resources/designImport';
 import { exportDescription } from './resources/export';
 import { folderDescription } from './resources/folder';
+import { imageTransformationDescription } from './resources/imageTransformation';
 import { mergeDescription } from './resources/merge';
 import { resizeDescription } from './resources/resize';
 import { assetDescription } from './resources/asset';
@@ -54,6 +55,7 @@ export class Canva implements INodeType {
 					{ name: 'Design Import', value: 'designImport' },
 					{ name: 'Export', value: 'export' },
 					{ name: 'Folder', value: 'folder' },
+					{ name: 'Image Transformation (Preview API)', value: 'imageTransformation' },
 					{ name: 'Merge (Preview API)', value: 'merge' },
 					{ name: 'Resize', value: 'resize' },
 					{ name: 'User', value: 'user' },
@@ -67,6 +69,7 @@ export class Canva implements INodeType {
 			...designImportDescription,
 			...exportDescription,
 			...folderDescription,
+			...imageTransformationDescription,
 			...mergeDescription,
 			...resizeDescription,
 			...assetDescription,
@@ -688,6 +691,71 @@ export class Canva implements INodeType {
 							body: { name },
 							json: true,
 						});
+					}
+				}
+
+				// ─── Image Transformation ──────────────────────────────────────────
+				else if (resource === 'imageTransformation') {
+					if (operation === 'removeBackground') {
+						const assetId = this.getNodeParameter('assetId', i) as string;
+						const name = this.getNodeParameter('name', i) as string;
+						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
+						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
+
+						const body: IDataObject = {
+							asset_id: assetId,
+							transformations: [{ type: 'background_removal' }],
+						};
+						if (name) body.name = name;
+
+						// Canva only returns a job ID while the job is in progress: a job that finishes
+						// straight away comes back with its result (or error) and no ID.
+						type ImageTransformationJob = {
+							job: { id?: string; status: string; error?: { code: string; message: string } };
+						};
+
+						// 1. Create image transformation job
+						const createResp = (await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/image-transformations`,
+							body,
+							json: true,
+						})) as ImageTransformationJob;
+
+						const transformationJobId = createResp.job.id;
+
+						// 2. Poll until done
+						const deadline = Date.now() + maxWait;
+						let jobResp = createResp;
+
+						while (jobResp.job.status === 'in_progress') {
+							if (Date.now() >= deadline) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Background removal job ${transformationJobId} timed out after ${maxWait / 1000}s`,
+									{ itemIndex: i },
+								);
+							}
+							await sleep(pollInterval);
+							jobResp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/image-transformations/${transformationJobId}`,
+								json: true,
+							})) as ImageTransformationJob;
+						}
+
+						// Include Canva's reason (e.g. no foreground found) so the user knows whether
+						// retrying with a different image could help.
+						if (jobResp.job.status === 'failed') {
+							const reason = jobResp.job.error?.message;
+							throw new NodeOperationError(
+								this.getNode(),
+								`Background removal failed${reason ? `: ${reason}` : ''}`,
+								{ itemIndex: i },
+							);
+						}
+
+						responseData = jobResp;
 					}
 				}
 
