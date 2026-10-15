@@ -2,7 +2,7 @@
 
 ![Banner](./.github/assets/github-banner.jpg)
 
-An n8n community node for connecting Canva to n8n using the [Canva Connect API](https://www.canva.dev/docs/connect/). Create and export designs, bulk-generate from brand templates, manage assets and folders, import external files, and connect Canva to the rest of your stack.
+An n8n community node for connecting Canva to n8n using the [Canva REST APIs](https://www.canva.dev/docs/apps/rest-apis/) (formerly the Connect API). Create and export designs, bulk-generate from brand templates, manage assets and folders, import external files, and connect Canva to the rest of your stack.
 
 - [Installation](#installation)
 - [Running n8n locally](#running-n8n-locally)
@@ -263,6 +263,6 @@ The **Autofill → Create** operation requires a `data` object whose keys must m
 
 - [Ready-to-import example workflows](./examples/)
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
-- [Canva Connect API reference](https://www.canva.dev/docs/connect/api-reference/)
+- [Canva REST API reference](https://www.canva.dev/docs/apps/reference/)
 - [Canva Developer Portal](https://www.canva.com/developers)
 - [Canva Developer Documentation](https://www.canva.dev/)
