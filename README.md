@@ -217,6 +217,8 @@ You can tune polling behaviour with two optional parameters available on each as
 
 If a job fails, the node throws an error with the Canva error details.
 
+Rate-limited requests are retried automatically, honouring Canva's `Retry-After` header. A used-up quota isn't retried: if the user is out of AI credits, or has used up their free autofill or resize trial, the node fails straight away with an error that says so, with Canva's reason underneath.
+
 ### Preview APIs
 
 Operations marked _(Preview)_ use endpoints that are still in preview on the Canva platform. They may change without notice and **cannot be used in integrations submitted to Canva's public integration review**. Use them only for internal or development workflows.

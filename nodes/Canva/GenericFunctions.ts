@@ -15,6 +15,19 @@ const BASE_URL = 'https://api.canva.com/rest/v1';
 const MAX_RATE_LIMIT_RETRIES = 3;
 
 /**
+ * 429 error codes for a used-up quota: AI credits (`credit_quota_exceeded`), or the free autofill and
+ * resize trials (`quota_exceeded`). These won't reset within the retry window, so retrying only delays
+ * the error. Other 429s (rate limits, `credit_quota_cooldown`) are retried.
+ *
+ * Each maps to the error title shown instead of n8n's generic "too many requests" for a 429, which
+ * suggests that waiting will help. Canva's own message stays as the error's description.
+ */
+const QUOTA_EXHAUSTED_TITLES = new Map([
+	['credit_quota_exceeded', 'The Canva user is out of AI credits'],
+	['quota_exceeded', 'The Canva user has used up their free quota for this feature'],
+]);
+
+/**
  * Identifies this node's traffic in Canva's API request logs, distinguishing it
  * from generic n8n HTTP Request node usage. Do not remove: used for adoption analytics.
  */
@@ -46,12 +59,15 @@ export async function canvaApiRequest(
 			const err = error as ApiRequestError;
 			const status = err.httpCode ?? err.statusCode ?? err.response?.status;
 
-			// Running out of AI credits is also a 429, but the quota won't reset within the
-			// retry window, so fail straight away instead of waiting.
-			const creditQuotaExceeded = err.context?.data?.code === 'credit_quota_exceeded';
+			// A used-up quota is also a 429, but it won't reset in time, so fail straight away.
+			const code = err.context?.data?.code;
+			const quotaTitle = code ? QUOTA_EXHAUSTED_TITLES.get(code) : undefined;
 
-			if (String(status) !== '429' || creditQuotaExceeded || attempt >= MAX_RATE_LIMIT_RETRIES) {
-				throw new NodeApiError(ctx.getNode(), error as JsonObject);
+			if (String(status) !== '429' || quotaTitle || attempt >= MAX_RATE_LIMIT_RETRIES) {
+				// n8n has already wrapped the error, so this returns that same NodeApiError.
+				const apiError = new NodeApiError(ctx.getNode(), error as JsonObject);
+				if (quotaTitle) apiError.message = quotaTitle;
+				throw apiError;
 			}
 
 			const headers = err.cause?.response?.headers ?? err.response?.headers;
