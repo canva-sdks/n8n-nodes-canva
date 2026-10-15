@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import {
 	NodeApiError,
 	NodeConnectionTypes,
@@ -776,6 +777,76 @@ export class Canva implements INodeType {
 							throw new NodeOperationError(
 								this.getNode(),
 								`Design generation job ${generationJobId} failed${reason ? `: ${reason}` : ''}`,
+								{ itemIndex: i },
+							);
+						}
+
+						responseData = jobResp;
+					} else if (operation === 'generateImage') {
+						const prompt = this.getNodeParameter('prompt', i) as string;
+						const aspectRatio = this.getNodeParameter('aspectRatio', i) as string;
+						const model = this.getNodeParameter('model', i) as string;
+						const saveToUploads = this.getNodeParameter('saveToUploads', i) as boolean;
+						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
+						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
+
+						// Canva requires an idempotency key. A new key per item gives each item its own job,
+						// while canvaApiRequest's rate-limit retries reuse it, so they can't create duplicates.
+						const body: IDataObject = {
+							prompt,
+							aspect_ratio: aspectRatio,
+							idempotency_key: randomUUID(),
+						};
+						// Leaving the model out lets Canva pick one, and fall back if it's unavailable.
+						if (model !== 'auto') body.model = model;
+						if (saveToUploads) {
+							const assetName = this.getNodeParameter('assetName', i) as string;
+							const assetUpload: IDataObject = { type: 'upload' };
+							if (assetName) assetUpload.asset_name = assetName;
+							body.asset_upload = assetUpload;
+						}
+
+						type ImageGenerationJob = {
+							job: { id: string; status: string; error?: { code: string; message: string } };
+						};
+
+						// 1. Create image generation job
+						const createResp = (await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/image-generations`,
+							body,
+							json: true,
+						})) as ImageGenerationJob;
+
+						const generationJobId = createResp.job.id;
+
+						// 2. Poll until done
+						const deadline = Date.now() + maxWait;
+						let jobResp = createResp;
+
+						while (jobResp.job.status === 'in_progress') {
+							if (Date.now() >= deadline) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Image generation job ${generationJobId} timed out after ${maxWait / 1000}s`,
+									{ itemIndex: i },
+								);
+							}
+							await sleep(pollInterval);
+							jobResp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/image-generations/${generationJobId}`,
+								json: true,
+							})) as ImageGenerationJob;
+						}
+
+						// Include Canva's reason (e.g. the prompt failed safety checks, or the chosen model is
+						// unavailable) so the user knows whether to reword the prompt or switch models.
+						if (jobResp.job.status === 'failed') {
+							const reason = jobResp.job.error?.message;
+							throw new NodeOperationError(
+								this.getNode(),
+								`Image generation job ${generationJobId} failed${reason ? `: ${reason}` : ''}`,
 								{ itemIndex: i },
 							);
 						}

@@ -66,7 +66,7 @@ Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations
 
 | Scope                                                                                    | Used by                                                                      |
 | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `asset:read` / `asset:write`                                                             | Asset, Image Transformation resources                                        |
+| `asset:read` / `asset:write`                                                             | Asset, Generation, Image Transformation resources                            |
 | `brandtemplate:content:read` / `brandtemplate:content:write` / `brandtemplate:meta:read` | Brand Template resource                                                      |
 | `comment:read` / `comment:write`                                                         | Comment resource (Preview)                                                   |
 | `design:content:read` / `design:content:write` / `design:meta:read`                      | Design, Autofill, Design Import, Export, Generation, Merge, Resize resources |
@@ -168,6 +168,7 @@ Your integration's **Scopes** settings should look like this:
 | Operation       | Description                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Generate Design | Generate a presentation or Canva doc from a brief, optionally following a slide outline, and wait for completion (async) |
+| Generate Image  | Generate an image from a prompt, optionally saving it to the user's Uploads, and wait for completion (async)             |
 
 ### Image Transformation _(Preview API)_
 
@@ -222,7 +223,7 @@ Operations marked _(Preview)_ use endpoints that are still in preview on the Can
 
 ### AI credits
 
-**Design Import → Import From Image**, **Generation → Generate Design**, and **Image Transformation → Remove Background** use the user's Canva AI credits each time they start a job (checking on a running job doesn't). If the user is out of AI credits, the node fails immediately with a `credit_quota_exceeded` error instead of retrying.
+**Design Import → Import From Image**, **Generation → Generate Design** and **Generate Image**, and **Image Transformation → Remove Background** use the user's Canva AI credits each time they start a job (checking on a running job doesn't). If the user is out of AI credits, the node fails immediately with a `credit_quota_exceeded` error instead of retrying.
 
 ### Moving items
 
@@ -247,6 +248,12 @@ It requires a Canva plan with premium features. **User → Get Capabilities** re
 For presentations, an optional **Outline** sets the slides to generate, in the same format as the Canva API: a `sections` array of up to 100 slides, each with a `title` and an optional `description` and `points` (up to 50). Leave `sections` empty (the default, `{"sections": []}`) to let Canva plan the slides. If an earlier node or an AI agent produces just the list of slides, wrap it with an expression such as `{{ { "sections": $json.slides } }}`.
 
 The new design opens from `job.result.design.urls.edit_url`, which is valid for 30 days and only works for the connected user. Design generation depends on the user's eligibility and team permissions; **User → Get Capabilities** returns `design_generation` when the user can use it. If the brief fails Canva's content-safety checks, the job fails and the node reports Canva's reason.
+
+### Image generation
+
+**Generation → Generate Image** creates one image from a text **Prompt**, in a square, landscape, or portrait shape. Leave **Model** on **Auto** to let Canva pick the best model and fall back to another if one is unavailable. Picking a specific model makes the job fail when that model can't serve the request.
+
+By default, the image is also saved to the user's Canva Uploads, and its asset ID at `job.result.image.asset.id` works straight away in **Design → Create** or as an image field in **Autofill → Create**. Turn off **Save to Uploads** to get only the download URL at `job.result.image.url`, which is valid for 24 hours. To pass the file itself to another node, download that URL with an **HTTP Request** node. If the prompt fails Canva's safety checks, the job fails and the node reports Canva's reason.
 
 ### Autofill dataset format
 
