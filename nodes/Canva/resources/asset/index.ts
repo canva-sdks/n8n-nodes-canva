@@ -32,7 +32,7 @@ export const assetOperations: INodeProperties[] = [
 				action: 'Update an asset',
 			},
 			{
-				name: 'Upload From URL',
+				name: 'Upload From URL (Preview)',
 				value: 'upload',
 				description: 'Upload an asset to Canva from a public URL',
 				action: 'Upload an asset from URL',

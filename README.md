@@ -128,14 +128,14 @@ Your integration's **Scopes** settings should look like this:
 
 ### Design
 
-| Operation               | Description                                   |
-| ----------------------- | --------------------------------------------- |
-| Create                  | Create a new design                           |
-| Get                     | Get metadata for a design                     |
-| Get Dataset _(Preview)_ | Get the autofill dataset for a design         |
-| Get Export Formats      | Get the available export formats for a design |
-| Get Many                | Get many designs from the user's projects     |
-| Get Pages _(Preview)_   | Get metadata for pages in a design            |
+| Operation             | Description                                   |
+| --------------------- | --------------------------------------------- |
+| Create                | Create a new design                           |
+| Get                   | Get metadata for a design                     |
+| Get Dataset           | Get the autofill dataset for a design         |
+| Get Export Formats    | Get the available export formats for a design |
+| Get Many              | Get many designs from the user's projects     |
+| Get Pages _(Preview)_ | Get metadata for pages in a design            |
 
 ### Design Import
 

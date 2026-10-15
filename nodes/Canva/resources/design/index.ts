@@ -2,7 +2,6 @@ import type { INodeProperties } from 'n8n-workflow';
 import { designCreateDescription } from './create';
 import { designGetDescription } from './get';
 import { designGetDatasetDescription } from './getDataset';
-import { designGetDatasetPreviewNoticeDescription } from './getDatasetPreviewNotice';
 import { designGetAllDescription } from './getAll';
 import { designGetExportFormatsDescription } from './getExportFormats';
 import { designGetPagesDescription } from './getPages';
@@ -29,7 +28,7 @@ export const designOperations: INodeProperties[] = [
 				action: 'Get a design',
 			},
 			{
-				name: 'Get Dataset (Preview)',
+				name: 'Get Dataset',
 				value: 'getDataset',
 				description: 'Get the autofill dataset for a design',
 				action: 'Get design dataset',
@@ -47,7 +46,7 @@ export const designOperations: INodeProperties[] = [
 				action: 'Get many designs',
 			},
 			{
-				name: 'Get Pages',
+				name: 'Get Pages (Preview)',
 				value: 'getPages',
 				description: 'Get metadata for pages in a design',
 				action: 'Get design pages',
@@ -61,7 +60,6 @@ export const designDescription: INodeProperties[] = [
 	...designOperations,
 	...designCreateDescription,
 	...designGetDescription,
-	...designGetDatasetPreviewNoticeDescription,
 	...designGetDatasetDescription,
 	...designGetExportFormatsDescription,
 	...designGetPagesPreviewNoticeDescription,
