@@ -161,7 +161,11 @@ export class Canva implements INodeType {
 							});
 						}
 
-						const body: IDataObject = { brand_template_id: brandTemplateId, data };
+						const body: IDataObject = {
+							type: 'create_from_brand_template',
+							brand_template_id: brandTemplateId,
+							data,
+						};
 						if (title) body.title = title;
 
 						responseData = await runCanvaJob(this, i, {
