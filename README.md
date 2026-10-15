@@ -64,14 +64,14 @@ Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations
 
 - In the **Scopes** tab, enable the following scopes:
 
-| Scope                                                                                    | Used by                                                          |
-| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `asset:read` / `asset:write`                                                             | Asset, Image Transformation resources                            |
-| `brandtemplate:content:read` / `brandtemplate:content:write` / `brandtemplate:meta:read` | Brand Template resource                                          |
-| `comment:read` / `comment:write`                                                         | Comment resource (Preview)                                       |
-| `design:content:read` / `design:content:write` / `design:meta:read`                      | Design, Autofill, Design Import, Export, Merge, Resize resources |
-| `folder:read` / `folder:write`                                                           | Folder resource                                                  |
-| `profile:read`                                                                           | User resource                                                    |
+| Scope                                                                                    | Used by                                                                      |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `asset:read` / `asset:write`                                                             | Asset, Image Transformation resources                                        |
+| `brandtemplate:content:read` / `brandtemplate:content:write` / `brandtemplate:meta:read` | Brand Template resource                                                      |
+| `comment:read` / `comment:write`                                                         | Comment resource (Preview)                                                   |
+| `design:content:read` / `design:content:write` / `design:meta:read`                      | Design, Autofill, Design Import, Export, Generation, Merge, Resize resources |
+| `folder:read` / `folder:write`                                                           | Folder resource                                                              |
+| `profile:read`                                                                           | User resource                                                                |
 
 Your integration's **Scopes** settings should look like this:
 
@@ -161,6 +161,14 @@ Your integration's **Scopes** settings should look like this:
 | Move Item  | Move a design, asset, or folder to a different folder |
 | Update     | Rename a folder                                       |
 
+### Generation _(Preview API)_
+
+> ⚠️ All Generation operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
+
+| Operation       | Description                                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Generate Design | Generate a presentation or Canva doc from a brief, optionally following a slide outline, and wait for completion (async) |
+
 ### Image Transformation _(Preview API)_
 
 > ⚠️ All Image Transformation operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
@@ -199,12 +207,12 @@ Your integration's **Scopes** settings should look like this:
 
 ### Async operations
 
-Several operations — **Asset Upload From URL**, **Autofill**, **Design Import**, **Export**, **Image Transformation**, **Merge**, and **Resize** — create background jobs in Canva. This node automatically polls for completion and returns the final result once the job succeeds.
+Several operations — **Asset Upload From URL**, **Autofill**, **Design Import**, **Export**, **Generation**, **Image Transformation**, **Merge**, and **Resize** — create background jobs in Canva. This node automatically polls for completion and returns the final result once the job succeeds.
 
 You can tune polling behaviour with two optional parameters available on each async operation:
 
 - **Poll Interval** (default 2–3 s depending on the operation) — how often to check for job completion
-- **Max Wait** (default 60 s, or 120 s for Design Import) — maximum time to wait before throwing a timeout error
+- **Max Wait** (default 60–300 s depending on the operation) — maximum time to wait before throwing a timeout error
 
 If a job fails, the node throws an error with the Canva error details.
 
@@ -214,7 +222,7 @@ Operations marked _(Preview)_ use endpoints that are still in preview on the Can
 
 ### AI credits
 
-**Design Import → Import From Image** and **Image Transformation → Remove Background** use the user's Canva AI credits each time they start a job (checking on a running job doesn't). If the user is out of AI credits, the node fails immediately with a `credit_quota_exceeded` error instead of retrying.
+**Design Import → Import From Image**, **Generation → Generate Design**, and **Image Transformation → Remove Background** use the user's Canva AI credits each time they start a job (checking on a running job doesn't). If the user is out of AI credits, the node fails immediately with a `credit_quota_exceeded` error instead of retrying.
 
 ### Moving items
 
@@ -231,6 +239,14 @@ Magic Layers must be allowed in the user's team permissions. **User → Get Capa
 **Image Transformation → Remove Background** saves the cut-out image as a new asset and leaves the original untouched. Like Magic Layers, it takes the ID of an image asset that has finished uploading. The new asset's ID is at `job.result.asset.id`, ready to use in **Design → Create** or as an image field in **Autofill → Create**.
 
 It requires a Canva plan with premium features. **User → Get Capabilities** returns `background_removal` when the user can use it. If Canva can't find a subject to keep, the job fails and the node reports Canva's reason.
+
+### Design generation
+
+**Generation → Generate Design** creates a presentation or Canva doc from a written **Brief**. The more the brief says about the subject, audience, required wording, tone, and look, the closer the result will be.
+
+For presentations, an optional **Outline** sets the slides to generate, in the same format as the Canva API: a `sections` array of up to 100 slides, each with a `title` and an optional `description` and `points` (up to 50). Leave `sections` empty (the default, `{"sections": []}`) to let Canva plan the slides. If an earlier node or an AI agent produces just the list of slides, wrap it with an expression such as `{{ { "sections": $json.slides } }}`.
+
+The new design opens from `job.result.design.urls.edit_url`, which is valid for 30 days and only works for the connected user. Design generation depends on the user's eligibility and team permissions; **User → Get Capabilities** returns `design_generation` when the user can use it. If the brief fails Canva's content-safety checks, the job fails and the node reports Canva's reason.
 
 ### Autofill dataset format
 

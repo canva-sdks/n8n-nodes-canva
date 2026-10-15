@@ -18,6 +18,7 @@ import { designDescription } from './resources/design';
 import { designImportDescription } from './resources/designImport';
 import { exportDescription } from './resources/export';
 import { folderDescription } from './resources/folder';
+import { generationDescription } from './resources/generation';
 import { imageTransformationDescription } from './resources/imageTransformation';
 import { mergeDescription } from './resources/merge';
 import { resizeDescription } from './resources/resize';
@@ -55,6 +56,7 @@ export class Canva implements INodeType {
 					{ name: 'Design Import', value: 'designImport' },
 					{ name: 'Export', value: 'export' },
 					{ name: 'Folder', value: 'folder' },
+					{ name: 'Generation (Preview API)', value: 'generation' },
 					{ name: 'Image Transformation (Preview API)', value: 'imageTransformation' },
 					{ name: 'Merge (Preview API)', value: 'merge' },
 					{ name: 'Resize', value: 'resize' },
@@ -69,6 +71,7 @@ export class Canva implements INodeType {
 			...designImportDescription,
 			...exportDescription,
 			...folderDescription,
+			...generationDescription,
 			...imageTransformationDescription,
 			...mergeDescription,
 			...resizeDescription,
@@ -691,6 +694,93 @@ export class Canva implements INodeType {
 							body: { name },
 							json: true,
 						});
+					}
+				}
+
+				// ─── Generation ────────────────────────────────────────────────────
+				else if (resource === 'generation') {
+					if (operation === 'generateDesign') {
+						const brief = this.getNodeParameter('brief', i) as string;
+						const designTypeName = this.getNodeParameter('designTypeName', i) as string;
+						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
+						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
+
+						const body: IDataObject = {
+							brief,
+							design_type: { type: 'preset', name: designTypeName },
+						};
+
+						// Canva only accepts an outline for presentations, so the field is hidden otherwise.
+						if (designTypeName === 'presentation') {
+							const outlineRaw = this.getNodeParameter('outline', i, '') as string | IDataObject;
+
+							let outline: unknown = outlineRaw;
+							if (typeof outlineRaw === 'string') {
+								try {
+									outline = outlineRaw.trim() ? JSON.parse(outlineRaw) : undefined;
+								} catch {
+									throw new NodeOperationError(
+										this.getNode(),
+										'The "Outline" field is not valid JSON',
+										{ itemIndex: i },
+									);
+								}
+							}
+
+							// The default { "sections": [] } or a cleared field means no outline: Canva requires at
+							// least one slide. Anything else goes to Canva as written, and Canva validates it.
+							const sections = (outline as IDataObject | undefined)?.sections;
+							if (outline !== undefined && !(Array.isArray(sections) && sections.length === 0)) {
+								body.outline = outline as IDataObject;
+							}
+						}
+
+						type DesignGenerationJob = {
+							job: { id: string; status: string; error?: { code: string; message: string } };
+						};
+
+						// 1. Create design generation job
+						const createResp = (await canvaApiRequest(this, {
+							method: 'POST',
+							url: `/generations`,
+							body,
+							json: true,
+						})) as DesignGenerationJob;
+
+						const generationJobId = createResp.job.id;
+
+						// 2. Poll until done
+						const deadline = Date.now() + maxWait;
+						let jobResp = createResp;
+
+						while (jobResp.job.status === 'in_progress') {
+							if (Date.now() >= deadline) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Design generation job ${generationJobId} timed out after ${maxWait / 1000}s`,
+									{ itemIndex: i },
+								);
+							}
+							await sleep(pollInterval);
+							jobResp = (await canvaApiRequest(this, {
+								method: 'GET',
+								url: `/generations/${generationJobId}`,
+								json: true,
+							})) as DesignGenerationJob;
+						}
+
+						// Include Canva's reason (e.g. the brief failed content-safety checks) so the user
+						// knows whether rewording the brief could help.
+						if (jobResp.job.status === 'failed') {
+							const reason = jobResp.job.error?.message;
+							throw new NodeOperationError(
+								this.getNode(),
+								`Design generation job ${generationJobId} failed${reason ? `: ${reason}` : ''}`,
+								{ itemIndex: i },
+							);
+						}
+
+						responseData = jobResp;
 					}
 				}
 
