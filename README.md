@@ -2,269 +2,226 @@
 
 ![Banner](./.github/assets/github-banner.jpg)
 
-An n8n community node for connecting Canva to n8n using the [Canva REST APIs](https://www.canva.dev/docs/apps/rest-apis/) (formerly the Connect API). Create and export designs, bulk-generate from brand templates, manage assets and folders, import external files, and connect Canva to the rest of your stack.
+Use Canva in your n8n workflows. Create, autofill, and export designs, manage your assets and folders, and use Canva's AI to generate designs and images, remove backgrounds, or turn flat images into editable designs.
+
+This node uses the [Canva REST APIs](https://www.canva.dev/docs/apps/rest-apis/) (formerly the Connect API).
 
 - [Installation](#installation)
-- [Running n8n locally](#running-n8n-locally)
 - [Credentials](#credentials)
 - [Operations](#operations)
-- [Usage notes](#usage-notes)
+- [Good to know](#good-to-know)
+- [Run it locally](#run-it-locally)
 - [Resources](#resources)
 
 ## Installation
 
-> This section is for people who already have an n8n instance running (cloud or self-hosted). If you want to test this node on your own machine first, see [Running n8n locally](#running-n8n-locally) below.
-
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
-
-## Running n8n locally
-
-> This section is for developers who want to run and test this node locally.
-
-**Prerequisites:** Node.js 24.15+, npm.
-
-1. Install dependencies and start n8n in dev mode:
-
-   ```bash
-   npm install
-   npm run dev
-   ```
-
-   This builds the node, links it to a local n8n instance, and starts n8n at [http://127.0.0.1:5678](http://127.0.0.1:5678) with hot reload enabled. The **Canva** node will appear in the node picker under _Community Nodes_.
-
-2. Follow the [Credentials](#credentials) section below to connect your Canva account.
-
-   > **Note:** When running locally, use `http://127.0.0.1:5678/rest/oauth2-credential/callback` as the redirect URI in the Canva Developer Portal. Canva does not accept `localhost` — you must use the IP address.
-
-### Troubleshooting
-
-#### `npm run dev` fails with `EACCES: permission denied, rename ...` inside `~/.npm/_cacache`
-
-`npm run dev` starts n8n via `npx n8n@latest`, which downloads n8n through your machine's shared npm cache (`~/.npm`). If that cache contains files owned by another user — usually root, left behind by running npm with `sudo` at some point — the download fails with `EACCES`/`EEXIST` rename errors. Reclaim ownership of the cache and retry:
-
-```bash
-sudo chown -R $(id -u):$(id -g) ~/.npm
-npm run dev
-```
+Follow n8n's guide to [installing community nodes](https://docs.n8n.io/integrations/community-nodes/installation-and-management), using the package name `@canva/n8n-nodes-canva`.
 
 ## Credentials
 
-This node uses **OAuth2 with PKCE** to authenticate with Canva.
+To connect n8n to Canva, you create an app in the Canva Developer Portal, then paste its details into n8n. It takes about five minutes.
 
-### 1. Create a Canva integration
+### 1. Create an app in the Canva Developer Portal
 
-Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations/connect-api) and create a new private integration. After creation, the integration's settings page will automatically open.
+1. Go to [**Your apps**](https://www.canva.com/developers/apps) in the Canva Developer Portal and create a new app. Choose **Private** if your team is on Canva Enterprise (the app stays inside your team), or **Public** otherwise. You can't change this later.
+2. Open **Outside Canva** and click **Start integrating**.
+3. On **Outside Canva → Configuration**:
+   - Turn on **Canva REST APIs**.
+   - Under **Credentials**, copy the **Client ID**, then click **Generate secret** and copy the secret too. Canva only shows the secret once, so keep it somewhere safe.
+   - Under **Scopes**, turn on all of these:
+     - `asset`: Read and Write
+     - `brandtemplate:content`: Read and Write
+     - `brandtemplate:meta`: Read
+     - `comment`: Read and Write
+     - `design:content`: Read and Write
+     - `design:meta`: Read
+     - `folder`: Read and Write
+     - `profile`: Read
 
-- In the **Credentials** section, click on **Generate secret** to generate a new secret.
-- Copy and paste both the **Client ID** and **Client secret** to a secure file.
-- In the **Authentication** tab, add the **OAuth Redirect URL** shown in the n8n credential dialog to the **URL 1** field of the **Authorized redirects**:
-  - **n8n Cloud:** `https://oauth.n8n.cloud/oauth2/callback`
-  - **Self-hosted n8n:** `https://your-n8n-instance.com/rest/oauth2-credential/callback`
-  - **Local n8n:** `http://127.0.0.1:5678/rest/oauth2-credential/callback`
+     The node asks for all of them when you connect, and Canva refuses the connection if any are missing.
 
-- In the **Scopes** tab, enable the following scopes:
+4. On **Outside Canva → Redirect URLs**, paste n8n's redirect URL into **URL 1**. You'll find it in the n8n credential screen (step 2 below). It usually looks like this:
+   - **n8n Cloud:** `https://oauth.n8n.cloud/oauth2/callback`
+   - **Self-hosted n8n:** `https://your-n8n-instance.com/rest/oauth2-credential/callback`
+   - **n8n on your computer:** `http://127.0.0.1:5678/rest/oauth2-credential/callback` (Canva doesn't accept `localhost`, so use `127.0.0.1`)
 
-| Scope                                                                                    | Used by                                                                      |
-| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `asset:read` / `asset:write`                                                             | Asset, Generation, Image Transformation resources                            |
-| `brandtemplate:content:read` / `brandtemplate:content:write` / `brandtemplate:meta:read` | Brand Template resource                                                      |
-| `comment:read` / `comment:write`                                                         | Comment resource (Preview)                                                   |
-| `design:content:read` / `design:content:write` / `design:meta:read`                      | Design, Autofill, Design Import, Export, Generation, Merge, Resize resources |
-| `folder:read` / `folder:write`                                                           | Folder resource                                                              |
-| `profile:read`                                                                           | User resource                                                                |
+### 2. Connect it in n8n
 
-Your integration's **Scopes** settings should look like this:
-
-<!-- markdownlint-disable-next-line MD033 -->
-<img src="./.github/assets/app-scopes.png" alt="Your app's scopes" width="50%" />
-
-### 2. Add your integration's credentials to the Canva node in n8n
-
-1. In n8n, open **Credentials → New → Canva OAuth2 API**.
-2. Enter the **Client ID** and **Client secret** that you saved earlier.
-3. Click **Connect my account** and complete the OAuth flow.
+1. In n8n, go to **Credentials → New** and pick **Canva OAuth2 API**.
+2. Paste the **Client ID** and **Client secret** from step 1.
+3. Click **Connect my account** and approve access in Canva.
 
 ## Operations
 
+A few labels you'll see below:
+
+- _(Preview)_: uses one of Canva's preview APIs. See [Preview APIs](#preview-apis).
+- 💎: needs a paid Canva plan, such as Canva Pro.
+- ✨: uses the Canva user's AI credits. See [AI credits](#ai-credits).
+
 ### Asset
 
-| Operation                   | Description                                                       |
-| --------------------------- | ----------------------------------------------------------------- |
-| Delete                      | Delete an asset                                                   |
-| Get                         | Get metadata for an asset                                         |
-| Update                      | Update an asset's name or tags                                    |
-| Upload From URL _(Preview)_ | Upload an asset from a public URL and wait for completion (async) |
+| Operation                   | What it does                               |
+| --------------------------- | ------------------------------------------ |
+| Delete                      | Delete an asset                            |
+| Get                         | Get an asset's details                     |
+| Update                      | Rename an asset or change its tags         |
+| Upload From URL _(Preview)_ | Upload an image or video from a public URL |
 
 ### Autofill
 
-> 💎 The Autofill API can only be used on behalf of users on a Canva Pro plan or above.
+> 💎 Needs a Canva Pro plan or above.
 
-| Operation | Description                                                                   |
-| --------- | ----------------------------------------------------------------------------- |
-| Create    | Populate a brand template with data and wait for the resulting design (async) |
+| Operation | What it does                                              |
+| --------- | --------------------------------------------------------- |
+| Create    | Fill a brand template with your data to make a new design |
 
 ### Brand Template
 
-> 💎 The Brand Template APIs require a Canva plan with premium features (such as Canva Pro).
+> 💎 Needs a Canva plan with premium features, such as Canva Pro.
 
-| Operation           | Description                                     |
-| ------------------- | ----------------------------------------------- |
-| Get                 | Get metadata for a brand template               |
-| Get Dataset         | Get the autofill dataset for a brand template   |
-| Get Many            | Get many brand templates accessible to the user |
-| Publish _(Preview)_ | Publish a design as a brand template            |
+| Operation           | What it does                                        |
+| ------------------- | --------------------------------------------------- |
+| Get                 | Get a brand template's details                      |
+| Get Dataset         | Get the fields you can autofill in a brand template |
+| Get Many            | List the brand templates you can use                |
+| Publish _(Preview)_ | Publish a design as a brand template                |
 
 ### Comment _(Preview API)_
 
-> ⚠️ All Comment operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
-
-| Operation     | Description                                |
-| ------------- | ------------------------------------------ |
-| Create Reply  | Reply to a comment thread on a design      |
-| Create Thread | Create a new comment thread on a design    |
-| Get Reply     | Get a specific reply from a comment thread |
-| Get Thread    | Get metadata for a comment thread          |
-| List Replies  | List all replies in a comment thread       |
+| Operation     | What it does                       |
+| ------------- | ---------------------------------- |
+| Create Reply  | Reply to a comment thread          |
+| Create Thread | Start a comment thread on a design |
+| Get Reply     | Get one reply from a thread        |
+| Get Thread    | Get a comment thread               |
+| List Replies  | List the replies in a thread       |
 
 ### Design
 
-| Operation             | Description                                   |
-| --------------------- | --------------------------------------------- |
-| Create                | Create a new design                           |
-| Get                   | Get metadata for a design                     |
-| Get Dataset           | Get the autofill dataset for a design         |
-| Get Export Formats    | Get the available export formats for a design |
-| Get Many              | Get many designs from the user's projects     |
-| Get Pages _(Preview)_ | Get metadata for pages in a design            |
+| Operation             | What it does                                          |
+| --------------------- | ----------------------------------------------------- |
+| Create                | Create a blank design, optionally with an image in it |
+| Get                   | Get a design's details                                |
+| Get Dataset           | Get the fields you can autofill in a design           |
+| Get Export Formats    | See which file formats a design can be exported to    |
+| Get Many              | List your designs                                     |
+| Get Pages _(Preview)_ | Get details about each page in a design               |
 
 ### Design Import
 
-| Operation                     | Description                                                                                        |
-| ----------------------------- | -------------------------------------------------------------------------------------------------- |
-| Import From Image _(Preview)_ | Turn a flat image asset into an editable design using Magic Layers and wait for completion (async) |
-| Import From URL               | Import an external file (e.g. PPTX, PDF) into Canva from a URL and wait for completion (async)     |
+| Operation                     | What it does                                                        |
+| ----------------------------- | ------------------------------------------------------------------- |
+| Import From Image _(Preview)_ | ✨ Turn a flat image into an editable design with Magic Layers      |
+| Import From URL               | Import a file from a public URL, such as a PPTX or PDF, as a design |
 
 ### Export
 
-| Operation     | Description                                                            |
-| ------------- | ---------------------------------------------------------------------- |
-| Export Design | Export a design to a file format and wait for the download URL (async) |
+| Operation     | What it does                                                                         |
+| ------------- | ------------------------------------------------------------------------------------ |
+| Export Design | Export a design as a PDF, PNG, JPG, GIF, MP4, PPTX, and more, and get download links |
 
 ### Folder
 
-| Operation  | Description                                           |
-| ---------- | ----------------------------------------------------- |
-| Create     | Create a new folder                                   |
-| Delete     | Delete a folder                                       |
-| Get        | Get metadata for a folder                             |
-| List Items | List items inside a folder                            |
-| Move Item  | Move a design, asset, or folder to a different folder |
-| Update     | Rename a folder                                       |
+| Operation  | What it does                                      |
+| ---------- | ------------------------------------------------- |
+| Create     | Create a folder                                   |
+| Delete     | Delete a folder                                   |
+| Get        | Get a folder's details                            |
+| List Items | List what's in a folder                           |
+| Move Item  | Move a design, image, or folder to another folder |
+| Update     | Rename a folder                                   |
 
 ### Generation _(Preview API)_
 
-> ⚠️ All Generation operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
-
-| Operation       | Description                                                                                                              |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Generate Design | Generate a presentation or Canva doc from a brief, optionally following a slide outline, and wait for completion (async) |
-| Generate Image  | Generate an image from a prompt, optionally saving it to the user's Uploads, and wait for completion (async)             |
+| Operation       | What it does                                               |
+| --------------- | ---------------------------------------------------------- |
+| Generate Design | ✨ Create a presentation or Canva doc from a written brief |
+| Generate Image  | ✨ Create an image from a text prompt                      |
 
 ### Image Transformation _(Preview API)_
 
-> ⚠️ All Image Transformation operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
+> 💎 Needs a Canva plan with premium features, such as Canva Pro.
 
-> 💎 Background removal requires a Canva plan with premium features (such as Canva Pro).
-
-| Operation         | Description                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------ |
-| Remove Background | Remove the background from an image asset and save the result as a new asset (async) |
+| Operation         | What it does                                                      |
+| ----------------- | ----------------------------------------------------------------- |
+| Remove Background | ✨ Remove the background from an image and save it as a new image |
 
 ### Merge _(Preview API)_
 
-> ⚠️ All Merge operations use a Preview API that may have unannounced breaking changes and cannot be used in public integrations submitted for Canva review.
-
-| Operation        | Description                                                                         |
-| ---------------- | ----------------------------------------------------------------------------------- |
-| Create Merge Job | Merge design pages by applying page operations to create or modify a design (async) |
+| Operation        | What it does                                                                     |
+| ---------------- | -------------------------------------------------------------------------------- |
+| Create Merge Job | Combine pages from other designs into a new one, or rearrange an existing design |
 
 ### Resize
 
-> 💎 The Resize API requires a Canva plan with premium features (such as Canva Pro). Users on the Canva Free plan have access to a limited trial.
+> 💎 Needs a Canva plan with premium features, such as Canva Pro. Canva Free users get a limited trial.
 
-| Operation         | Description                                                                       |
-| ----------------- | --------------------------------------------------------------------------------- |
-| Create Resize Job | Create a resized copy of a design in new dimensions or a different format (async) |
+| Operation         | What it does                          |
+| ----------------- | ------------------------------------- |
+| Create Resize Job | Make a copy of a design in a new size |
 
 ### User
 
-| Operation        | Description                                                    |
-| ---------------- | -------------------------------------------------------------- |
-| Get Capabilities | Get the API capabilities available to the current user account |
-| Get Me           | Get the User ID and Team ID of the authenticated user          |
-| Get Profile      | Get the display name of the authenticated user                 |
+| Operation        | What it does                                        |
+| ---------------- | --------------------------------------------------- |
+| Get Capabilities | See which Canva features the connected user can use |
+| Get Me           | Get the connected user's ID and team ID             |
+| Get Profile      | Get the connected user's display name               |
 
-## Usage notes
+## Good to know
 
-### Async operations
+### Waiting for Canva to finish
 
-Several operations — **Asset Upload From URL**, **Autofill**, **Design Import**, **Export**, **Generation**, **Image Transformation**, **Merge**, and **Resize** — create background jobs in Canva. This node automatically polls for completion and returns the final result once the job succeeds.
+Some operations start a job in Canva and wait for it to finish: Upload From URL, Autofill, both imports, Export, Merge, Resize, and all the AI features. While it waits, the node checks every few seconds (**Poll Interval**) and gives up after a while (**Max Wait**, 60 to 300 seconds by default, depending on the operation). Big jobs, like long presentations, can take a couple of minutes.
 
-You can tune polling behaviour with two optional parameters available on each async operation:
+If a job fails, the error tells you Canva's reason, such as a prompt that didn't pass Canva's safety checks.
 
-- **Poll Interval** (default 2–3 s depending on the operation) — how often to check for job completion
-- **Max Wait** (default 60–300 s depending on the operation) — maximum time to wait before throwing a timeout error
+### When Canva is busy, or a quota runs out
 
-If a job fails, the node throws an error with the Canva error details.
-
-Rate-limited requests are retried automatically, honouring Canva's `Retry-After` header. A used-up quota isn't retried: if the user is out of AI credits, or has used up their free autofill or resize trial, the node fails straight away with an error that says so, with Canva's reason underneath.
+If Canva says it's getting too many requests, the node waits and tries again, up to three times. If the user has run out of AI credits, or used up their free autofill or resize trial, waiting won't help, so the node stops straight away and says so.
 
 ### Preview APIs
 
-Operations marked _(Preview)_ use endpoints that are still in preview on the Canva platform. They may change without notice and **cannot be used in integrations submitted to Canva's public integration review**. Use them only for internal or development workflows.
+Operations marked _(Preview)_ use Canva APIs that are still in preview. They can change without notice, and apps that use them can't be submitted for Canva's public review. They're great for internal workflows and experiments.
 
 ### AI credits
 
-**Design Import → Import From Image**, **Generation → Generate Design** and **Generate Image**, and **Image Transformation → Remove Background** use the user's Canva AI credits each time they start a job (checking on a running job doesn't). If the user is out of AI credits, the node fails immediately with a `credit_quota_exceeded` error instead of retrying.
+**Import From Image**, **Generate Design**, **Generate Image**, and **Remove Background** use the Canva user's AI credits every time they run. Checking on a running job is free.
 
-### Moving items
+Not every account can use every AI feature. **User → Get Capabilities** lists what the connected user can do, for example `image_to_design_imports` (Magic Layers), `background_removal`, and `design_generation`.
 
-The **Folder → Move Item** operation accepts any item ID (design, asset, or folder). To move an item to the top-level Projects folder, use `root` as the **To Folder ID**.
+### Tips
 
-### Magic Layers
+- **Autofill:** run **Brand Template → Get Dataset** first. Your data's field names need to match the template's fields.
+- **Import From Image (Magic Layers):** works best on flat graphics like posters, flyers, and social posts. Upload the image first with **Asset → Upload From URL**, then use its ID: `{{ $json.job.asset.id }}`. Magic Layers must be allowed in your team's Canva settings.
+- **Remove Background:** saves the result as a new image and leaves the original as it is. The new image's ID is at `job.result.asset.id`.
+- **Generate Design:** the more your brief says about the topic, audience, wording, tone, and look, the better the result. For presentations, you can also plan the slides with **Outline**, using Canva's format: `{"sections": [{"title": "…", "description": "…", "points": ["…"]}]}` (up to 100 slides). Leave `sections` empty to let Canva decide. If an earlier node gives you just a list of slides, use `{{ { "sections": $json.slides } }}`. Open the new design from `job.result.design.urls.edit_url` (the link works for 30 days).
+- **Generate Image:** leave **Model** on **Auto** unless you need a specific one. Images are saved to the user's Uploads by default, so you can use `job.result.image.asset.id` in **Design → Create** or **Autofill**. The download link at `job.result.image.url` works for 24 hours. To pass the file to another node, download it with an **HTTP Request** node.
+- **Move Item:** use `root` as the **To Folder ID** to move something to the top level of your Projects.
 
-**Design Import → Import From Image** turns a flat image (such as a poster, flyer, or social graphic) into a Canva design where each element is a separate, editable layer. It takes the ID of an image asset that's already in the user's Canva account, so upload the image first with **Asset → Upload From URL** and pass the resulting `job.asset.id`.
+## Run it locally
 
-Magic Layers must be allowed in the user's team permissions. **User → Get Capabilities** returns `image_to_design_imports` when the user can use it.
+For developers who want to work on this node.
 
-### Background removal
+You'll need Node.js 24.15 or later and npm. Then run:
 
-**Image Transformation → Remove Background** saves the cut-out image as a new asset and leaves the original untouched. Like Magic Layers, it takes the ID of an image asset that has finished uploading. The new asset's ID is at `job.result.asset.id`, ready to use in **Design → Create** or as an image field in **Autofill → Create**.
+```bash
+npm install
+npm run dev
+```
 
-It requires a Canva plan with premium features. **User → Get Capabilities** returns `background_removal` when the user can use it. If Canva can't find a subject to keep, the job fails and the node reports Canva's reason.
+This builds the node and starts n8n at [http://127.0.0.1:5678](http://127.0.0.1:5678) with the Canva node loaded and hot reload turned on. When you set up your Canva app, use `http://127.0.0.1:5678/rest/oauth2-credential/callback` as the redirect URL.
 
-### Design generation
+**If `npm run dev` fails with `EACCES: permission denied, rename ...` in `~/.npm/_cacache`:** your npm cache has files owned by another user, usually left behind by running npm with `sudo`. Take ownership of the cache, then try again:
 
-**Generation → Generate Design** creates a presentation or Canva doc from a written **Brief**. The more the brief says about the subject, audience, required wording, tone, and look, the closer the result will be.
-
-For presentations, an optional **Outline** sets the slides to generate, in the same format as the Canva API: a `sections` array of up to 100 slides, each with a `title` and an optional `description` and `points` (up to 50). Leave `sections` empty (the default, `{"sections": []}`) to let Canva plan the slides. If an earlier node or an AI agent produces just the list of slides, wrap it with an expression such as `{{ { "sections": $json.slides } }}`.
-
-The new design opens from `job.result.design.urls.edit_url`, which is valid for 30 days and only works for the connected user. Design generation depends on the user's eligibility and team permissions; **User → Get Capabilities** returns `design_generation` when the user can use it. If the brief fails Canva's content-safety checks, the job fails and the node reports Canva's reason.
-
-### Image generation
-
-**Generation → Generate Image** creates one image from a text **Prompt**, in a square, landscape, or portrait shape. Leave **Model** on **Auto** to let Canva pick the best model and fall back to another if one is unavailable. Picking a specific model makes the job fail when that model can't serve the request.
-
-By default, the image is also saved to the user's Canva Uploads, and its asset ID at `job.result.image.asset.id` works straight away in **Design → Create** or as an image field in **Autofill → Create**. Turn off **Save to Uploads** to get only the download URL at `job.result.image.url`, which is valid for 24 hours. To pass the file itself to another node, download that URL with an **HTTP Request** node. If the prompt fails Canva's safety checks, the job fails and the node reports Canva's reason.
-
-### Autofill dataset format
-
-The **Autofill → Create** operation requires a `data` object whose keys must match the dataset fields returned by **Brand Template → Get Dataset**. Use the Get Dataset operation first to discover the correct field names.
+```bash
+sudo chown -R $(id -u):$(id -g) ~/.npm
+```
 
 ## Resources
 
-- [Ready-to-import example workflows](./examples/)
-- [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
-- [Canva REST API reference](https://www.canva.dev/docs/apps/reference/)
-- [Canva Developer Portal](https://www.canva.com/developers)
-- [Canva Developer Documentation](https://www.canva.dev/)
+- [Example workflows](./examples/), ready to import
+- [Canva REST APIs](https://www.canva.dev/docs/apps/rest-apis/) and the [REST API reference](https://www.canva.dev/docs/apps/reference/)
+- [Canva Developer Portal](https://www.canva.com/developers/apps)
+- [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes)
