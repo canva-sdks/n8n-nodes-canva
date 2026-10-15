@@ -3,7 +3,6 @@ import {
 	NodeApiError,
 	NodeConnectionTypes,
 	NodeOperationError,
-	sleep,
 	type IDataObject,
 	type IExecuteFunctions,
 	type INodeExecutionData,
@@ -26,7 +25,7 @@ import { resizeDescription } from './resources/resize';
 import { assetDescription } from './resources/asset';
 import { userDescription } from './resources/user';
 
-import { canvaApiRequest } from './GenericFunctions';
+import { canvaApiRequest, runCanvaJob } from './GenericFunctions';
 
 export class Canva implements INodeType {
 	description: INodeTypeDescription = {
@@ -134,45 +133,13 @@ export class Canva implements INodeType {
 						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
 						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
 
-						// 1. Create upload job
-						const createResp = (await canvaApiRequest(this, {
-							method: 'POST',
-							url: `/url-asset-uploads`,
+						responseData = await runCanvaJob(this, i, {
+							kind: 'Asset upload',
+							path: '/url-asset-uploads',
 							body: { name, url },
-							json: true,
-						})) as { job: { id: string; status: string } };
-
-						const uploadJobId = createResp.job.id;
-
-						// 2. Poll until done
-						const deadline = Date.now() + maxWait;
-						let jobResp = createResp;
-
-						while (jobResp.job.status === 'in_progress') {
-							if (Date.now() >= deadline) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Asset upload job ${uploadJobId} timed out after ${maxWait / 1000}s`,
-									{ itemIndex: i },
-								);
-							}
-							await sleep(pollInterval);
-							jobResp = (await canvaApiRequest(this, {
-								method: 'GET',
-								url: `/url-asset-uploads/${uploadJobId}`,
-								json: true,
-							})) as { job: { id: string; status: string } };
-						}
-
-						if (jobResp.job.status === 'failed') {
-							throw new NodeOperationError(
-								this.getNode(),
-								`Asset upload job ${uploadJobId} failed`,
-								{ itemIndex: i },
-							);
-						}
-
-						responseData = jobResp;
+							pollInterval,
+							maxWait,
+						});
 					}
 				}
 
@@ -197,43 +164,13 @@ export class Canva implements INodeType {
 						const body: IDataObject = { brand_template_id: brandTemplateId, data };
 						if (title) body.title = title;
 
-						// 1. Create autofill job
-						const createResp = (await canvaApiRequest(this, {
-							method: 'POST',
-							url: `/autofills`,
+						responseData = await runCanvaJob(this, i, {
+							kind: 'Autofill',
+							path: '/autofills',
 							body,
-							json: true,
-						})) as { job: { id: string; status: string } };
-
-						const autofillJobId = createResp.job.id;
-
-						// 2. Poll until done
-						const deadline = Date.now() + maxWait;
-						let jobResp = createResp;
-
-						while (jobResp.job.status === 'in_progress') {
-							if (Date.now() >= deadline) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Autofill job ${autofillJobId} timed out after ${maxWait / 1000}s`,
-									{ itemIndex: i },
-								);
-							}
-							await sleep(pollInterval);
-							jobResp = (await canvaApiRequest(this, {
-								method: 'GET',
-								url: `/autofills/${autofillJobId}`,
-								json: true,
-							})) as { job: { id: string; status: string } };
-						}
-
-						if (jobResp.job.status === 'failed') {
-							throw new NodeOperationError(this.getNode(), `Autofill job ${autofillJobId} failed`, {
-								itemIndex: i,
-							});
-						}
-
-						responseData = jobResp;
+							pollInterval,
+							maxWait,
+						});
 					}
 				}
 
@@ -462,97 +399,27 @@ export class Canva implements INodeType {
 						const body: IDataObject = { image: { asset_id: assetId } };
 						if (title) body.title = title;
 
-						type ImageImportJob = {
-							job: { id: string; status: string; error?: { code: string; message: string } };
-						};
-
-						// 1. Create image-to-design import job (Magic Layers)
-						const createResp = (await canvaApiRequest(this, {
-							method: 'POST',
-							url: `/image-to-design-imports`,
+						// Image-to-design import (Magic Layers)
+						responseData = await runCanvaJob(this, i, {
+							kind: 'Image import',
+							path: '/image-to-design-imports',
 							body,
-							json: true,
-						})) as ImageImportJob;
-
-						const importJobId = createResp.job.id;
-
-						// 2. Poll until done
-						const deadline = Date.now() + maxWait;
-						let jobResp = createResp;
-
-						while (jobResp.job.status === 'in_progress') {
-							if (Date.now() >= deadline) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Image import job ${importJobId} timed out after ${maxWait / 1000}s`,
-									{ itemIndex: i },
-								);
-							}
-							await sleep(pollInterval);
-							jobResp = (await canvaApiRequest(this, {
-								method: 'GET',
-								url: `/image-to-design-imports/${importJobId}`,
-								json: true,
-							})) as ImageImportJob;
-						}
-
-						// Include Canva's reason (e.g. moderation or quota errors) so the user knows
-						// whether retrying with a different image could help.
-						if (jobResp.job.status === 'failed') {
-							const reason = jobResp.job.error?.message;
-							throw new NodeOperationError(
-								this.getNode(),
-								`Image import job ${importJobId} failed${reason ? `: ${reason}` : ''}`,
-								{ itemIndex: i },
-							);
-						}
-
-						responseData = jobResp;
+							pollInterval,
+							maxWait,
+						});
 					} else if (operation === 'createImport') {
 						const url = this.getNodeParameter('url', i) as string;
 						const title = this.getNodeParameter('title', i) as string;
 						const pollInterval = this.getNodeParameter('pollInterval', i) as number;
 						const maxWait = (this.getNodeParameter('maxWait', i) as number) * 1000;
 
-						// 1. Create URL import job
-						const createResp = (await canvaApiRequest(this, {
-							method: 'POST',
-							url: `/url-imports`,
+						responseData = await runCanvaJob(this, i, {
+							kind: 'Design import',
+							path: '/url-imports',
 							body: { url, title },
-							json: true,
-						})) as { job: { id: string; status: string } };
-
-						const importJobId = createResp.job.id;
-
-						// 2. Poll until done
-						const deadline = Date.now() + maxWait;
-						let jobResp = createResp;
-
-						while (jobResp.job.status === 'in_progress') {
-							if (Date.now() >= deadline) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Design import job ${importJobId} timed out after ${maxWait / 1000}s`,
-									{ itemIndex: i },
-								);
-							}
-							await sleep(pollInterval);
-							jobResp = (await canvaApiRequest(this, {
-								method: 'GET',
-								url: `/url-imports/${importJobId}`,
-								json: true,
-							})) as { job: { id: string; status: string } };
-						}
-
-						if (jobResp.job.status === 'failed') {
-							throw new NodeOperationError(
-								this.getNode(),
-								`Design import job ${importJobId} failed`,
-								{ itemIndex: i },
-							);
-						}
-
-						responseData = jobResp;
+							pollInterval,
+							maxWait,
+						});
 					}
 				}
 
@@ -578,43 +445,13 @@ export class Canva implements INodeType {
 								.filter((n) => !isNaN(n));
 						}
 
-						// 1. Create export job
-						const createResp = (await canvaApiRequest(this, {
-							method: 'POST',
-							url: `/exports`,
+						responseData = await runCanvaJob(this, i, {
+							kind: 'Export',
+							path: '/exports',
 							body: { design_id: designId, format: exportFormat },
-							json: true,
-						})) as { job: { id: string; status: string } };
-
-						const exportId = createResp.job.id;
-
-						// 2. Poll until done
-						const deadline = Date.now() + maxWait;
-						let jobResp = createResp;
-
-						while (jobResp.job.status === 'in_progress') {
-							if (Date.now() >= deadline) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Export job ${exportId} timed out after ${maxWait / 1000}s`,
-									{ itemIndex: i },
-								);
-							}
-							await sleep(pollInterval);
-							jobResp = (await canvaApiRequest(this, {
-								method: 'GET',
-								url: `/exports/${exportId}`,
-								json: true,
-							})) as { job: { id: string; status: string } };
-						}
-
-						if (jobResp.job.status === 'failed') {
-							throw new NodeOperationError(this.getNode(), `Export job ${exportId} failed`, {
-								itemIndex: i,
-							});
-						}
-
-						responseData = jobResp;
+							pollInterval,
+							maxWait,
+						});
 					}
 				}
 
@@ -736,52 +573,13 @@ export class Canva implements INodeType {
 							}
 						}
 
-						type DesignGenerationJob = {
-							job: { id: string; status: string; error?: { code: string; message: string } };
-						};
-
-						// 1. Create design generation job
-						const createResp = (await canvaApiRequest(this, {
-							method: 'POST',
-							url: `/generations`,
+						responseData = await runCanvaJob(this, i, {
+							kind: 'Design generation',
+							path: '/generations',
 							body,
-							json: true,
-						})) as DesignGenerationJob;
-
-						const generationJobId = createResp.job.id;
-
-						// 2. Poll until done
-						const deadline = Date.now() + maxWait;
-						let jobResp = createResp;
-
-						while (jobResp.job.status === 'in_progress') {
-							if (Date.now() >= deadline) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Design generation job ${generationJobId} timed out after ${maxWait / 1000}s`,
-									{ itemIndex: i },
-								);
-							}
-							await sleep(pollInterval);
-							jobResp = (await canvaApiRequest(this, {
-								method: 'GET',
-								url: `/generations/${generationJobId}`,
-								json: true,
-							})) as DesignGenerationJob;
-						}
-
-						// Include Canva's reason (e.g. the brief failed content-safety checks) so the user
-						// knows whether rewording the brief could help.
-						if (jobResp.job.status === 'failed') {
-							const reason = jobResp.job.error?.message;
-							throw new NodeOperationError(
-								this.getNode(),
-								`Design generation job ${generationJobId} failed${reason ? `: ${reason}` : ''}`,
-								{ itemIndex: i },
-							);
-						}
-
-						responseData = jobResp;
+							pollInterval,
+							maxWait,
+						});
 					} else if (operation === 'generateImage') {
 						const prompt = this.getNodeParameter('prompt', i) as string;
 						const aspectRatio = this.getNodeParameter('aspectRatio', i) as string;
@@ -806,52 +604,13 @@ export class Canva implements INodeType {
 							body.asset_upload = assetUpload;
 						}
 
-						type ImageGenerationJob = {
-							job: { id: string; status: string; error?: { code: string; message: string } };
-						};
-
-						// 1. Create image generation job
-						const createResp = (await canvaApiRequest(this, {
-							method: 'POST',
-							url: `/image-generations`,
+						responseData = await runCanvaJob(this, i, {
+							kind: 'Image generation',
+							path: '/image-generations',
 							body,
-							json: true,
-						})) as ImageGenerationJob;
-
-						const generationJobId = createResp.job.id;
-
-						// 2. Poll until done
-						const deadline = Date.now() + maxWait;
-						let jobResp = createResp;
-
-						while (jobResp.job.status === 'in_progress') {
-							if (Date.now() >= deadline) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Image generation job ${generationJobId} timed out after ${maxWait / 1000}s`,
-									{ itemIndex: i },
-								);
-							}
-							await sleep(pollInterval);
-							jobResp = (await canvaApiRequest(this, {
-								method: 'GET',
-								url: `/image-generations/${generationJobId}`,
-								json: true,
-							})) as ImageGenerationJob;
-						}
-
-						// Include Canva's reason (e.g. the prompt failed safety checks, or the chosen model is
-						// unavailable) so the user knows whether to reword the prompt or switch models.
-						if (jobResp.job.status === 'failed') {
-							const reason = jobResp.job.error?.message;
-							throw new NodeOperationError(
-								this.getNode(),
-								`Image generation job ${generationJobId} failed${reason ? `: ${reason}` : ''}`,
-								{ itemIndex: i },
-							);
-						}
-
-						responseData = jobResp;
+							pollInterval,
+							maxWait,
+						});
 					}
 				}
 
@@ -869,54 +628,13 @@ export class Canva implements INodeType {
 						};
 						if (name) body.name = name;
 
-						// Canva only returns a job ID while the job is in progress: a job that finishes
-						// straight away comes back with its result (or error) and no ID.
-						type ImageTransformationJob = {
-							job: { id?: string; status: string; error?: { code: string; message: string } };
-						};
-
-						// 1. Create image transformation job
-						const createResp = (await canvaApiRequest(this, {
-							method: 'POST',
-							url: `/image-transformations`,
+						responseData = await runCanvaJob(this, i, {
+							kind: 'Background removal',
+							path: '/image-transformations',
 							body,
-							json: true,
-						})) as ImageTransformationJob;
-
-						const transformationJobId = createResp.job.id;
-
-						// 2. Poll until done
-						const deadline = Date.now() + maxWait;
-						let jobResp = createResp;
-
-						while (jobResp.job.status === 'in_progress') {
-							if (Date.now() >= deadline) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Background removal job ${transformationJobId} timed out after ${maxWait / 1000}s`,
-									{ itemIndex: i },
-								);
-							}
-							await sleep(pollInterval);
-							jobResp = (await canvaApiRequest(this, {
-								method: 'GET',
-								url: `/image-transformations/${transformationJobId}`,
-								json: true,
-							})) as ImageTransformationJob;
-						}
-
-						// Include Canva's reason (e.g. no foreground found) so the user knows whether
-						// retrying with a different image could help.
-						if (jobResp.job.status === 'failed') {
-							const reason = jobResp.job.error?.message;
-							throw new NodeOperationError(
-								this.getNode(),
-								`Background removal failed${reason ? `: ${reason}` : ''}`,
-								{ itemIndex: i },
-							);
-						}
-
-						responseData = jobResp;
+							pollInterval,
+							maxWait,
+						});
 					}
 				}
 
@@ -954,43 +672,13 @@ export class Canva implements INodeType {
 							if (optionalTitle) body.title = optionalTitle;
 						}
 
-						// 1. Create merge job
-						const createResp = (await canvaApiRequest(this, {
-							method: 'POST',
-							url: `/merges`,
+						responseData = await runCanvaJob(this, i, {
+							kind: 'Merge',
+							path: '/merges',
 							body,
-							json: true,
-						})) as { job: { id: string; status: string } };
-
-						const mergeJobId = createResp.job.id;
-
-						// 2. Poll until done
-						const deadline = Date.now() + maxWait;
-						let jobResp = createResp;
-
-						while (jobResp.job.status === 'in_progress') {
-							if (Date.now() >= deadline) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Merge job ${mergeJobId} timed out after ${maxWait / 1000}s`,
-									{ itemIndex: i },
-								);
-							}
-							await sleep(pollInterval);
-							jobResp = (await canvaApiRequest(this, {
-								method: 'GET',
-								url: `/merges/${mergeJobId}`,
-								json: true,
-							})) as { job: { id: string; status: string } };
-						}
-
-						if (jobResp.job.status === 'failed') {
-							throw new NodeOperationError(this.getNode(), `Merge job ${mergeJobId} failed`, {
-								itemIndex: i,
-							});
-						}
-
-						responseData = jobResp;
+							pollInterval,
+							maxWait,
+						});
 					}
 				}
 
@@ -1012,43 +700,13 @@ export class Canva implements INodeType {
 							design_type = { type: 'custom', width, height };
 						}
 
-						// 1. Create resize job
-						const createResp = (await canvaApiRequest(this, {
-							method: 'POST',
-							url: `/resizes`,
+						responseData = await runCanvaJob(this, i, {
+							kind: 'Resize',
+							path: '/resizes',
 							body: { design_id: designId, design_type },
-							json: true,
-						})) as { job: { id: string; status: string } };
-
-						const resizeJobId = createResp.job.id;
-
-						// 2. Poll until done
-						const deadline = Date.now() + maxWait;
-						let jobResp = createResp;
-
-						while (jobResp.job.status === 'in_progress') {
-							if (Date.now() >= deadline) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Resize job ${resizeJobId} timed out after ${maxWait / 1000}s`,
-									{ itemIndex: i },
-								);
-							}
-							await sleep(pollInterval);
-							jobResp = (await canvaApiRequest(this, {
-								method: 'GET',
-								url: `/resizes/${resizeJobId}`,
-								json: true,
-							})) as { job: { id: string; status: string } };
-						}
-
-						if (jobResp.job.status === 'failed') {
-							throw new NodeOperationError(this.getNode(), `Resize job ${resizeJobId} failed`, {
-								itemIndex: i,
-							});
-						}
-
-						responseData = jobResp;
+							pollInterval,
+							maxWait,
+						});
 					}
 				}
 

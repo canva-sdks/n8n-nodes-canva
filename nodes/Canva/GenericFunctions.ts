@@ -1,6 +1,8 @@
 import {
 	NodeApiError,
+	NodeOperationError,
 	sleep,
+	type IDataObject,
 	type IExecuteFunctions,
 	type IHttpRequestOptions,
 	type JsonObject,
@@ -58,4 +60,73 @@ export async function canvaApiRequest(
 			await sleep(waitMs);
 		}
 	}
+}
+
+export type CanvaJobResponse = {
+	// Some job APIs (e.g. image transformations) only return an ID while the job is in progress:
+	// a job that finishes straight away comes back with its result (or error) and no ID.
+	job: { id?: string; status: string; error?: { code: string; message: string } };
+};
+
+type CanvaJobOptions = {
+	/** Job name used in error messages, e.g. "Export". */
+	kind: string;
+	/** Endpoint that creates the job. Its status is polled at `${path}/${jobId}`. */
+	path: string;
+	body: IDataObject;
+	/** Milliseconds between status checks. */
+	pollInterval: number;
+	/** Milliseconds to wait for the job to finish before timing out. */
+	maxWait: number;
+};
+
+/**
+ * Creates a Canva async job and polls it until it is no longer `in_progress`.
+ * Returns the last job response, and throws if the job times out or fails.
+ */
+export async function runCanvaJob(
+	ctx: IExecuteFunctions,
+	itemIndex: number,
+	{ kind, path, body, pollInterval, maxWait }: CanvaJobOptions,
+): Promise<CanvaJobResponse> {
+	const createResp = (await canvaApiRequest(ctx, {
+		method: 'POST',
+		url: path,
+		body,
+		json: true,
+	})) as CanvaJobResponse;
+
+	const jobId = createResp.job.id;
+	const jobLabel = jobId ? `${kind} job ${jobId}` : `${kind} job`;
+	const deadline = Date.now() + maxWait;
+	let jobResp = createResp;
+
+	while (jobResp.job.status === 'in_progress') {
+		if (Date.now() >= deadline) {
+			throw new NodeOperationError(
+				ctx.getNode(),
+				`${jobLabel} timed out after ${maxWait / 1000}s`,
+				{ itemIndex },
+			);
+		}
+		await sleep(pollInterval);
+		jobResp = (await canvaApiRequest(ctx, {
+			method: 'GET',
+			url: `${path}/${jobId}`,
+			json: true,
+		})) as CanvaJobResponse;
+	}
+
+	// Include Canva's reason (e.g. moderation or quota errors) so the user can tell
+	// whether retrying, or retrying with different input, could help.
+	if (jobResp.job.status === 'failed') {
+		const reason = jobResp.job.error?.message;
+		throw new NodeOperationError(
+			ctx.getNode(),
+			`${jobLabel} failed${reason ? `: ${reason}` : ''}`,
+			{ itemIndex },
+		);
+	}
+
+	return jobResp;
 }
