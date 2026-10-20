@@ -58,7 +58,8 @@ export const exportExportDescription: INodeProperties[] = [
 		default: 'horizontal_1080p',
 		required: true,
 		displayOptions: { show: { resource: ['export'], operation: ['export'], format: ['mp4'] } },
-		description: 'Orientation and resolution of the exported MP4',
+		description:
+			"Target resolution of the exported MP4. The video keeps the design's aspect ratio, so horizontal and vertical give the same result.",
 	},
 	{
 		displayName: 'Page Numbers',

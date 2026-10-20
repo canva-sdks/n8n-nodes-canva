@@ -9,7 +9,7 @@ export const generationGenerateImageDescription: INodeProperties[] = [
 		default: '',
 		required: true,
 		displayOptions: { show: { resource: ['generation'], operation: ['generateImage'] } },
-		description: 'Description of the image to generate (max 2000 characters)',
+		description: 'Description of the image to generate (max 5000 characters)',
 		placeholder: 'A watercolor poster of a lighthouse at dawn',
 	},
 	{
@@ -18,6 +18,9 @@ export const generationGenerateImageDescription: INodeProperties[] = [
 		type: 'options',
 		options: [
 			{ name: 'Landscape (16:9)', value: 'landscape' },
+			{ name: 'Landscape (3:2)', value: 'landscape_3_2' },
+			{ name: 'Portrait (2:3)', value: 'portrait_2_3' },
+			{ name: 'Portrait (4:5)', value: 'portrait_4_5' },
 			{ name: 'Portrait (9:16)', value: 'portrait' },
 			{ name: 'Square (1:1)', value: 'square' },
 		],
