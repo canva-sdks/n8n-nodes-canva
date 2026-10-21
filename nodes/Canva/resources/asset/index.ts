@@ -3,7 +3,6 @@ import { assetDeleteDescription } from './delete';
 import { assetGetDescription } from './get';
 import { assetUpdateDescription } from './update';
 import { assetUploadDescription } from './upload';
-import { assetUploadPreviewNoticeDescription } from './uploadPreviewNotice';
 
 export const assetOperations: INodeProperties[] = [
 	{
@@ -32,7 +31,7 @@ export const assetOperations: INodeProperties[] = [
 				action: 'Update an asset',
 			},
 			{
-				name: 'Upload From URL (Preview)',
+				name: 'Upload From URL',
 				value: 'upload',
 				description: 'Upload an asset to Canva from a public URL',
 				action: 'Upload an asset from URL',
@@ -47,6 +46,5 @@ export const assetDescription: INodeProperties[] = [
 	...assetDeleteDescription,
 	...assetGetDescription,
 	...assetUpdateDescription,
-	...assetUploadPreviewNoticeDescription,
 	...assetUploadDescription,
 ];

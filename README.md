@@ -61,12 +61,12 @@ A few labels you'll see below:
 
 ### Asset
 
-| Operation                   | What it does                               |
-| --------------------------- | ------------------------------------------ |
-| Delete                      | Delete an asset                            |
-| Get                         | Get an asset's details                     |
-| Update                      | Rename an asset or change its tags         |
-| Upload From URL _(Preview)_ | Upload an image or video from a public URL |
+| Operation       | What it does                               |
+| --------------- | ------------------------------------------ |
+| Delete          | Delete an asset                            |
+| Get             | Get an asset's details                     |
+| Update          | Rename an asset or change its tags         |
+| Upload From URL | Upload an image or video from a public URL |
 
 ### Autofill
 
