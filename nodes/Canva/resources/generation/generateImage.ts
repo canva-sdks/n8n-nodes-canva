@@ -39,6 +39,12 @@ export const generationGenerateImageDescription: INodeProperties[] = [
 				description: 'Canva picks the best model, and falls back to another if one is unavailable',
 			},
 			{
+				name: 'Canva Craft',
+				value: 'craft_v1_2k',
+				description:
+					"Canva's own model. Suited to infographics, posters, slides, portraits, landscapes, products, and marketing materials. Takes about a minute.",
+			},
+			{
 				name: 'Lucid Origin',
 				value: 'lucid_origin',
 				description: 'Suited to architecture, logos, posters, and sci-fi or fantasy scenes',
