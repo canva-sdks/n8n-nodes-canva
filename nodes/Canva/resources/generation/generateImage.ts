@@ -9,7 +9,7 @@ export const generationGenerateImageDescription: INodeProperties[] = [
 		default: '',
 		required: true,
 		displayOptions: { show: { resource: ['generation'], operation: ['generateImage'] } },
-		description: 'Description of the image to generate (max 5000 characters)',
+		description: 'Description of the image to generate (max 10000 characters)',
 		placeholder: 'A watercolor poster of a lighthouse at dawn',
 	},
 	{
