@@ -18,8 +18,13 @@ export const generationGenerateImageDescription: INodeProperties[] = [
 		type: 'options',
 		options: [
 			{ name: 'Landscape (16:9)', value: 'landscape' },
+			{ name: 'Landscape (2:1)', value: 'landscape_2_1' },
 			{ name: 'Landscape (3:2)', value: 'landscape_3_2' },
+			{ name: 'Landscape (4:3)', value: 'landscape_4_3' },
+			{ name: 'Landscape (5:4)', value: 'landscape_5_4' },
+			{ name: 'Portrait (1:2)', value: 'portrait_1_2' },
 			{ name: 'Portrait (2:3)', value: 'portrait_2_3' },
+			{ name: 'Portrait (3:4)', value: 'portrait_3_4' },
 			{ name: 'Portrait (4:5)', value: 'portrait_4_5' },
 			{ name: 'Portrait (9:16)', value: 'portrait' },
 			{ name: 'Square (1:1)', value: 'square' },
