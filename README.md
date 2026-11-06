@@ -179,7 +179,7 @@ If a job fails, the error tells you Canva's reason, such as a prompt that didn't
 
 ### When Canva is busy, or a quota runs out
 
-If Canva says it's getting too many requests, the node waits and tries again, up to three times. If the user has run out of AI credits, or used up their free autofill or resize trial, waiting won't help, so the node stops straight away and says so.
+If Canva says it's getting too many requests, the node waits and tries again, up to three times. If the user has run out of AI credits, the Canva app has used up its own credit quota, or the user has used up their free autofill or resize trial, waiting won't help, so the node stops straight away and says so.
 
 ### Preview APIs
 
